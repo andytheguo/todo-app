@@ -96,6 +96,23 @@ app.patch("/users/:userId/tasks/:taskId", async (req: Request, res: Response) =>
   res.status(200).json(task);
 });
 
+app.delete("/users/:userId/tasks/:taskId", async (req: Request, res: Response) => {
+  const { userId, taskId } = req.params;
+
+  if (!userId || !taskId) {
+    return res.status(400).json({ error: "A user ID and taskId is required" });
+  }
+
+  await prisma.task.delete({
+    where: {
+      id: Number(taskId),
+      userId: userId as string
+    }
+  });
+
+  res.sendStatus(200);
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
