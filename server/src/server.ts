@@ -6,14 +6,21 @@ const port = 3000;
 
 app.use(express.json());
 
+// Tests
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');
 });
 
-app.get("/test", async (req: Request, res: Response) => {
+app.get("/test-users", async (req: Request, res: Response) => {
   const users = await prisma.user.findMany();
 
   res.json(users);
+});
+
+app.get("/test-tasks", async (req: Request, res: Response) => {
+  const tasks = await prisma.task.findMany();
+
+  res.json(tasks);
 });
 
 app.post("/users", async (req: Request, res: Response) => {
@@ -34,7 +41,7 @@ app.post("/users/:userId/tasks", async (req: Request, res: Response) => {
   const { title, description } = req.body;
 
   if (!userId) {
-    res.status(400).json({ error: "A User ID is required." });
+    return res.status(400).json({ error: "A User ID is required." });
   }
 
   const task = await prisma.task.create({
@@ -50,13 +57,13 @@ app.post("/users/:userId/tasks", async (req: Request, res: Response) => {
   });
 
   res.status(201).json(task);
-})
+});
 
 app.get("/users/:userId/tasks", async (req: Request, res: Response) => {
   const userId = req.params.userId as string;
 
   if (!userId) {
-    res.status(400).json({ error: "A User ID is required." });
+    return res.status(400).json({ error: "A user ID is required." });
   }
 
   const tasks = await prisma.task.findMany({
@@ -65,8 +72,29 @@ app.get("/users/:userId/tasks", async (req: Request, res: Response) => {
     }
   })
 
-  res.status(201).json(tasks);
-})
+  res.status(200).json(tasks);
+});
+
+app.patch("/users/:userId/tasks/:taskId", async (req: Request, res: Response) => {
+  const { userId, taskId } = req.params;
+  const { complete } = req.body;
+
+  if (!userId || !taskId) {
+    return res.status(400).json({ error: "A user ID and taskId is required" });
+  }
+
+  const task = await prisma.task.update({
+    where: {
+      id: Number(taskId),
+      userId: userId as string
+    },
+    data: {
+      complete: complete
+    }
+  });
+
+  res.status(200).json(task);
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
