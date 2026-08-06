@@ -1,17 +1,21 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { Prisma } from "../../generated/prisma/client.js";
+import argon2 from 'argon2';
 
 const router = Router();
 
 router.post("/users", async (req, res) => {
-  const { name, email } = req.body;
-
   try {
+    const { name, email, password } = req.body;
+
+    const hash = await argon2.hash(password);
+
     const user = await prisma.user.create({
       data: {
         name: name,
-        email: email
+        email: email,
+        password: hash
       },
     });
 
