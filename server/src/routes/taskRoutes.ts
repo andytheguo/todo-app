@@ -1,12 +1,22 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
-import { Prisma } from "../../generated/prisma/client.js";
+import { Prisma } from '../../generated/prisma/client.js';
+
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = Router();
 
-router.post("/users/:userId/tasks", async (req, res) => {
-  const userId = req.params.userId;
+router.post("/users/:userId/tasks", authenticateToken, async (req, res) => {
+  const userId = req.userId;
   const { title, description } = req.body;
+
+  if (!req.userId) {
+    return res.status(401).json({ error: "Unauthenticated" });
+  }
+
+  if (userId !== req.userId) {
+    return res.status(401).json({ error: "Unauthorised access" });
+  }
 
   try {
     const task = await prisma.task.create({
@@ -32,8 +42,16 @@ router.post("/users/:userId/tasks", async (req, res) => {
   }
 });
 
-router.get("/users/:userId/tasks", async (req, res) => {
-  const userId = req.params.userId;
+router.get("/users/:userId/tasks", authenticateToken, async (req, res) => {
+  const { userId } = req.params;
+
+  if (!req.userId) {
+    return res.status(401).json({ error: "Unauthenticated" });
+  }
+
+  if (userId !== req.userId) {
+    return res.status(401).json({ error: "Unauthorised access" });
+  }
 
   const tasks = await prisma.task.findMany({
     where: {
@@ -44,9 +62,17 @@ router.get("/users/:userId/tasks", async (req, res) => {
   res.status(200).json(tasks);
 });
 
-router.patch("/users/:userId/tasks/:taskId", async (req, res) => {
+router.patch("/users/:userId/tasks/:taskId", authenticateToken, async (req, res) => {
   const { userId, taskId } = req.params;
   const { complete } = req.body;
+
+  if (!req.userId) {
+    return res.status(401).json({ error: "Unauthenticated" });
+  }
+
+  if (userId !== req.userId) {
+    return res.status(401).json({ error: "Unauthorised access" });
+  }
 
   try {
     const task = await prisma.task.update({
@@ -66,8 +92,16 @@ router.patch("/users/:userId/tasks/:taskId", async (req, res) => {
   }
 });
 
-router.delete("/users/:userId/tasks/:taskId", async (req, res) => {
+router.delete("/users/:userId/tasks/:taskId", authenticateToken, async (req, res) => {
   const { userId, taskId } = req.params;
+
+  if (!req.userId) {
+    return res.status(401).json({ error: "Unauthenticated" });
+  }
+
+  if (userId !== req.userId) {
+    return res.status(401).json({ error: "Unauthorised access" });
+  }
 
   try {
     await prisma.task.delete({
