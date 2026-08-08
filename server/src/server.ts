@@ -1,8 +1,10 @@
+import "dotenv/config";
 import express from 'express';
 import { prisma } from './lib/prisma.js';
 
-import userRoutes from './routes/userRoutes.js'
+import userRoutes from './routes/userRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 const app = express();
 const port = 3000;
@@ -32,3 +34,4 @@ app.listen(port, () => {
 
 app.use(userRoutes);
 app.use(taskRoutes);
+app.use(authRoutes);

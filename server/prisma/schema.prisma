@@ -13,11 +13,12 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid())
-  name     String
-  email    String @unique
-  password String
-  tasks    Task[]
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  password      String
+  tasks         Task[]
+  refreshTokens RefreshToken[]
 }
 
 model Task {
@@ -27,4 +28,11 @@ model Task {
   complete    Boolean @default(false)
   userId      String
   user        User    @relation(fields: [userId], references: [id])
+}
+
+model RefreshToken {
+  id     Int    @id @default(autoincrement())
+  token  String @unique
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 }

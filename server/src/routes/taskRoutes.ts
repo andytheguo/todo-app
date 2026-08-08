@@ -15,7 +15,7 @@ router.post("/users/:userId/tasks", authenticateToken, async (req, res) => {
   }
 
   if (userId !== req.userId) {
-    return res.status(401).json({ error: "Unauthorised access" });
+    return res.status(403).json({ error: "Unauthorised access" });
   }
 
   try {
@@ -50,7 +50,7 @@ router.get("/users/:userId/tasks", authenticateToken, async (req, res) => {
   }
 
   if (userId !== req.userId) {
-    return res.status(401).json({ error: "Unauthorised access" });
+    return res.status(403).json({ error: "Unauthorised access" });
   }
 
   const tasks = await prisma.task.findMany({
@@ -71,7 +71,7 @@ router.patch("/users/:userId/tasks/:taskId", authenticateToken, async (req, res)
   }
 
   if (userId !== req.userId) {
-    return res.status(401).json({ error: "Unauthorised access" });
+    return res.status(403).json({ error: "Unauthorised access" });
   }
 
   try {
@@ -100,7 +100,7 @@ router.delete("/users/:userId/tasks/:taskId", authenticateToken, async (req, res
   }
 
   if (userId !== req.userId) {
-    return res.status(401).json({ error: "Unauthorised access" });
+    return res.status(403).json({ error: "Unauthorised access" });
   }
 
   try {

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { Prisma } from "../../generated/prisma/client.js";
 import argon2 from 'argon2';
-import jwt from 'jsonwebtoken';
+import { genAccessToken, genRefreshToken } from '../lib/jwtUtils.js';
 
 const router = Router();
 
@@ -55,15 +55,21 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const secret = process.env.ACCESS_TOKEN_SECRET;
+    const accessToken = genAccessToken(user.id);
+    const refreshToken = genRefreshToken(user.id);
 
-    if (!secret) {
-      throw new Error("ACCESS_TOKEN_SECRET is undefined");
-    }
+    await prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        user: {
+          connect: {
+            id: user.id
+          }
+        }
+      }
+    });
 
-    const accessToken = jwt.sign({ userId: user.id }, secret);
-
-    res.status(200).json({ accessToken: accessToken });
+    res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
   }
   catch (e) {
     res.sendStatus(500);
