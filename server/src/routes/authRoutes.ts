@@ -33,4 +33,25 @@ router.post("/token", async (req, res) => {
   }
 });
 
+router.delete("/logout", async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(401).json({ error: "No refresh token" });
+  }
+
+  try {
+    await prisma.refreshToken.delete({
+      where: {
+        token: refreshToken
+      }
+    });
+
+    res.sendStatus(204);
+  }
+  catch (e) {
+    res.status(403).json({ error: "Invalid refresh token" });
+  }
+});
+
 export default router;
