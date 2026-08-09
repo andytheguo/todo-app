@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from 'express';
 import { prisma } from './lib/prisma.js';
+import cors from 'cors';
 
 import userRoutes from './routes/userRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
@@ -9,6 +10,7 @@ import authRoutes from './routes/authRoutes.js';
 const app = express();
 const port = 3000;
 
+app.use(cors());
 app.use(express.json());
 
 // Tests
