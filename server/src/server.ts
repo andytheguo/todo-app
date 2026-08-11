@@ -14,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 // Tests
+// TODO: REMOVE TESTS
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });

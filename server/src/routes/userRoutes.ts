@@ -6,7 +6,7 @@ import { genAccessToken, genRefreshToken } from '../lib/jwtUtils.js';
 
 const router = Router();
 
-router.post("/users", async (req, res) => {
+router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
@@ -23,6 +23,7 @@ router.post("/users", async (req, res) => {
     res.status(201).json(user);
   }
   catch (e) {
+    console.error(e);
     if (e instanceof Prisma.PrismaClientValidationError) {
       return res.status(400).json({ error: "Missing or incorrect field" });
     }
