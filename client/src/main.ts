@@ -1,3 +1,5 @@
+import './styles.css';
+
 const app = document.querySelector<HTMLDivElement>("#app");
 
 async function register() {
@@ -28,7 +30,7 @@ async function register() {
   }
 
   // TODO: remove this:
-  console.log("Successfully loggin in!");
+  console.log("Successfully logged in!");
 }
 
 async function getTasks() {
@@ -85,13 +87,16 @@ async function login() {
 function displayRegister() {
   if (app) {
     app.innerHTML = `
-      <form id=register>
-        <input id="name" type="text" placeholder="Name" required>
-        <input id="email" type="text" placeholder="Email" required>
-        <input id="first-password" type="password" placeholder="Password" required>
-        <input id="confirm-password" type="password" placeholder="Confirm Password" required>
-        <button type="submit">Register</button>
-      </form>
+      <div class="cred-form">
+        <form class="centered-form" id=register>
+          <input id="name" type="text" placeholder="Name" required>
+          <input id="email" type="text" placeholder="Email" required>
+          <input id="first-password" type="password" placeholder="Password" required>
+          <input id="confirm-password" type="password" placeholder="Confirm Password" required>
+          <button type="submit">Register</button>
+          <a id="login-link" href="#">Already have an account?</a>
+        </form>
+      </div>
       `;
   }
 }
@@ -99,16 +104,33 @@ function displayRegister() {
 function displayLogin() {
   if (app) {
     app.innerHTML = `
-      <form id=login>
-        <input id="email" type="text" placeholder="Email" required>
-        <input id="password" type="password" placeholder="Password" required>
-        <button type="submit">Login</button>
-      </form>
+      <div class="cred-form">
+        <form class="centered-form" class="cred-form" id=login>
+          <input id="email" type="text" placeholder="Email" required>
+          <input id="password" type="password" placeholder="Password" required>
+          <button type="submit">Login</button>
+        </form>
+      </div>
       `;
   }
 }
 
-async function onLogin() {
+function changeState(state: string) {
+  switch (state) {
+    case "register": {
+      displayRegister();
+      onRegister();
+      break;
+    }
+    case "login": {
+      displayLogin();
+      onLogin();
+      break;
+    }
+  }
+}
+
+function onLogin() {
   const loginForm = document.querySelector<HTMLFormElement>("#login");
 
   loginForm.addEventListener("submit", async (event) => {
@@ -124,22 +146,26 @@ async function onLogin() {
   });
 }
 
-async function onRegister() {
-  const registerForm = document.querySelector("#register");
+function onRegister() {
+  const registerForm = document.querySelector<HTMLFormElement>("#register");
+  const loginLink = document.querySelector<HTMLLinkElement>("#login-link");
 
   registerForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     try {
       await register();
-      displayLogin();
-      onLogin();
+      changeState("login");
     }
     catch (e) {
       console.error(e);
     }
   });
+
+  loginLink.addEventListener("click", (event) => {
+    event.preventDefault();
+    changeState("login");
+  })
 }
 
-displayRegister();
-onRegister();
+changeState("register");
