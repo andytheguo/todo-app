@@ -24,3 +24,11 @@ form button {
     width: 150px;
     border-radius: 10px;
 }
+
+#error {
+    visibility: hidden;
+}
+
+.task {
+    background: lightgray;
+}

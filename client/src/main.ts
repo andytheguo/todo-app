@@ -54,6 +54,8 @@ async function getTasks() {
 
   // TODO: remove this
   console.log(data);
+
+  return data;
 }
 
 async function login() {
@@ -73,7 +75,7 @@ async function login() {
 
   const data = await res.json();
 
-  if (!res) {
+  if (!res.ok) {
     throw new Error(data.error);
   }
 
@@ -109,10 +111,48 @@ function displayLogin() {
           <input id="email" type="text" placeholder="Email" required>
           <input id="password" type="password" placeholder="Password" required>
           <button type="submit">Login</button>
+          <p id="error">
         </form>
       </div>
       `;
   }
+}
+
+function displayTasks(tasks) {
+  if (app) {
+    app.innerHTML = `
+      <h1>Tasks</h1>
+      <div id="tasks"></div>
+      `;
+
+    const tasksDiv = document.querySelector<HTMLDivElement>("#tasks");
+    for (const task of tasks) {
+      const taskDiv = document.createElement("div");
+      taskDiv.classList = "task";
+      const title = document.createElement("h2");
+      title.textContent = task.title;
+
+      let description;
+      if (task.description) {
+        description = document.createElement("p");
+        description.textContent = task.description;
+      }
+
+      const completed = document.createElement("p");
+      completed.textContent = task.completed ? "Done" : "In progress";
+
+      taskDiv.appendChild(title);
+      title.append(description, completed);
+
+      tasksDiv.appendChild(taskDiv);
+    }
+  }
+}
+
+// TODO: Need to handle errors from getTasks()
+async function showTasks() {
+  const tasks = await getTasks();
+  displayTasks(tasks);
 }
 
 function changeState(state: string) {
@@ -127,6 +167,10 @@ function changeState(state: string) {
       onLogin();
       break;
     }
+    case "tasks": {
+      showTasks();
+      break;
+    }
   }
 }
 
@@ -138,9 +182,12 @@ function onLogin() {
 
     try {
       await login();
-      await getTasks();
+      changeState("tasks");
     }
     catch (e) {
+      const errP = document.querySelector<HTMLParagraphElement>("#error");
+      errP.textContent = e.message;
+      errP.style.visibility = "visible";
       console.error(e);
     }
   });
