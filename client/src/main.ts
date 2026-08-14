@@ -118,17 +118,59 @@ function displayLogin() {
   }
 }
 
+// TODO: create a Task type
 function displayTasks(tasks) {
   if (app) {
     app.innerHTML = `
       <h1>Tasks</h1>
-      <div id="tasks"></div>
+      <div id="tasks">
+        <div id="incomplete-tasks">
+          <h2>In Progress</h2>
+        </div>
+        <div id="complete-tasks">
+          <h2>Completed</h2>
+        </div>
+      </div>
       `;
 
-    const tasksDiv = document.querySelector<HTMLDivElement>("#tasks");
+    const incompleteDiv = document.querySelector<HTMLDivElement>("#incomplete-tasks");
+    const completeDiv = document.querySelector<HTMLDivElement>("#complete-tasks");
+
+    const accessToken = localStorage.getItem("accessToken");
     for (const task of tasks) {
       const taskDiv = document.createElement("div");
       taskDiv.classList = "task";
+
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = task.complete;
+
+      input.addEventListener("change", async () => {
+        try {
+          const res = await fetch(`http://localhost:3000/user/tasks/${task.id}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({
+              complete: input.checked
+            })
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error);
+          }
+
+          changeState("tasks");
+        }
+        catch (e) {
+          console.error(e);
+        }
+      });
+
       const title = document.createElement("h2");
       title.textContent = task.title;
 
@@ -138,13 +180,9 @@ function displayTasks(tasks) {
         description.textContent = task.description;
       }
 
-      const completed = document.createElement("p");
-      completed.textContent = task.completed ? "Done" : "In progress";
+      taskDiv.append(input, title, description);
 
-      taskDiv.appendChild(title);
-      title.append(description, completed);
-
-      tasksDiv.appendChild(taskDiv);
+      (task.complete ? completeDiv : incompleteDiv).appendChild(taskDiv);
     }
   }
 }

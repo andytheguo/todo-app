@@ -29,6 +29,35 @@ form button {
     visibility: hidden;
 }
 
+#tasks {
+    display: flex;
+    flex-direction: row;
+    column-gap: 30px;
+}
+
+#incomplete-tasks, #complete-tasks {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    row-gap: 10px;
+    background: whitesmoke;
+    height: 90vh;
+    padding-left: 15px;
+    border-radius: 10px;
+}
+
 .task {
+    position: relative;
     background: lightgray;
+    padding-left: 15px;
+    width: 80%;
+    border-radius: 10px;
+}
+
+.task input[type="checkbox"] {
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    top: 20%;
+    right: 3%;
 }
