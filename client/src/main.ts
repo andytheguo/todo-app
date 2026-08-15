@@ -1,5 +1,7 @@
 import './styles.css';
 
+import type { Task } from './types';
+
 const app = document.querySelector<HTMLDivElement>("#app");
 
 async function register() {
@@ -118,8 +120,7 @@ function displayLogin() {
   }
 }
 
-// TODO: create a Task type
-function displayTasks(tasks) {
+function displayTasks(tasks: Task[]) {
   if (app) {
     app.innerHTML = `
       <h1>Tasks</h1>
@@ -141,11 +142,14 @@ function displayTasks(tasks) {
       const taskDiv = document.createElement("div");
       taskDiv.classList = "task";
 
-      const input = document.createElement("input");
-      input.type = "checkbox";
-      input.checked = task.complete;
+      const check = document.createElement("input");
+      check.type = "checkbox";
+      check.checked = task.complete;
 
-      input.addEventListener("change", async () => {
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "DELETE";
+
+      check.addEventListener("change", async () => {
         try {
           const res = await fetch(`http://localhost:3000/user/tasks/${task.id}`, {
             method: "PATCH",
@@ -154,13 +158,33 @@ function displayTasks(tasks) {
               "Authorization": `Bearer ${accessToken}`
             },
             body: JSON.stringify({
-              complete: input.checked
+              complete: check.checked
             })
           });
 
-          const data = await res.json();
+          if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error);
+          }
+
+          changeState("tasks");
+        }
+        catch (e) {
+          console.error(e);
+        }
+      });
+
+      delBtn.addEventListener("mouseup", async () => {
+        try {
+          const res = await fetch(`http://localhost:3000/user/tasks/${task.id}`, {
+            method: "DELETE",
+            headers: {
+              "Authorization": `Bearer ${accessToken}`
+            }
+          });
 
           if (!res.ok) {
+            const data = await res.json();
             throw new Error(data.error);
           }
 
@@ -180,7 +204,7 @@ function displayTasks(tasks) {
         description.textContent = task.description;
       }
 
-      taskDiv.append(input, title, description);
+      taskDiv.append(check, title, description, delBtn);
 
       (task.complete ? completeDiv : incompleteDiv).appendChild(taskDiv);
     }

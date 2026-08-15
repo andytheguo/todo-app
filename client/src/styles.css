@@ -61,3 +61,18 @@ form button {
     top: 20%;
     right: 3%;
 }
+
+.task button {
+    position: absolute;
+    height: 30px;
+    width: 60px;
+    bottom: 10%;
+    right: 3%;
+    background-color: transparent;
+    border: transparent;
+    color: red;
+}
+
+.task button:hover {
+    color: darkred;
+}
