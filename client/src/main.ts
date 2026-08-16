@@ -214,13 +214,14 @@ function displayTasks(tasks: Task[]) {
     const title = document.createElement("h2");
     title.textContent = task.title;
 
-    let description;
     if (task.description) {
-      description = document.createElement("p");
+      const description = document.createElement("p");
       description.textContent = task.description;
+      taskDiv.append(check, title, description, delBtn);
     }
-
-    taskDiv.append(check, title, description, delBtn);
+    else {
+      taskDiv.append(check, title, delBtn);
+    }
 
     (task.complete ? completeDiv : incompleteDiv).appendChild(taskDiv);
   }
@@ -242,6 +243,39 @@ function displayTasks(tasks: Task[]) {
       closeModal(modal, overlay);
     });
   });
+
+  const createButton = document.querySelector<HTMLButtonElement>("#create-button");
+
+  createButton.addEventListener("mouseup", async () => {
+    try {
+      const title = document.querySelector<HTMLTextAreaElement>("#task-title");
+      const description = document.querySelector<HTMLTextAreaElement>("#task-description");
+      await createTask(accessToken, title.value, description.value);
+      changeState("tasks");
+    }
+    catch (e) {
+      console.error(e);
+    }
+  });
+}
+
+async function createTask(accessToken, title, description?) {
+  const res = await fetch("http://localhost:3000/user/tasks", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${accessToken}`
+    },
+    body: JSON.stringify({
+      title: title,
+      description: description
+    })
+  });
+
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.error);
+  }
 }
 
 function openModal(modal, overlay) {
