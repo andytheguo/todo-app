@@ -13,6 +13,10 @@ router.post("/user/tasks", authenticateToken, async (req, res) => {
     return res.status(401).json({ error: "Unauthenticated" });
   }
 
+  if (title === "") {
+    return res.status(400).json({ error: "Title cannot be empty" });
+  }
+
   try {
     const task = await prisma.task.create({
       data: {

@@ -10,6 +10,10 @@ async function register() {
   const password = document.querySelector<HTMLInputElement>("#first-password");
   const confirmation = document.querySelector<HTMLInputElement>("#confirm-password");
 
+  if (!name || !email || !password || !confirmation) {
+    throw new Error("Registration form has not loaded yet");
+  }
+
   if (password.value !== confirmation.value) {
     throw new Error("Passwords must match")
   }
@@ -63,6 +67,10 @@ async function getTasks() {
 async function login() {
   const email = document.querySelector<HTMLInputElement>("#email");
   const password = document.querySelector<HTMLInputElement>("#password");
+
+  if (!email || !password) {
+    throw new Error("Login form has not loaded yet");
+  }
 
   const res = await fetch("http://localhost:3000/login", {
     method: "POST",
@@ -153,104 +161,44 @@ function displayTasks(tasks: Task[]) {
   const incompleteDiv = document.querySelector<HTMLDivElement>("#incomplete-tasks");
   const completeDiv = document.querySelector<HTMLDivElement>("#complete-tasks");
 
-  const accessToken = localStorage.getItem("accessToken");
   for (const task of tasks) {
-    const taskDiv = document.createElement("div");
-    taskDiv.classList = "task";
-
-    const check = document.createElement("input");
-    check.type = "checkbox";
-    check.checked = task.complete;
-
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "DELETE";
-
-    check.addEventListener("change", async () => {
-      try {
-        const res = await fetch(`http://localhost:3000/user/tasks/${task.id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${accessToken}`
-          },
-          body: JSON.stringify({
-            complete: check.checked
-          })
-        });
-
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error);
-        }
-
-        changeState("tasks");
-      }
-      catch (e) {
-        console.error(e);
-      }
-    });
-
-    delBtn.addEventListener("mouseup", async () => {
-      try {
-        const res = await fetch(`http://localhost:3000/user/tasks/${task.id}`, {
-          method: "DELETE",
-          headers: {
-            "Authorization": `Bearer ${accessToken}`
-          }
-        });
-
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error);
-        }
-
-        changeState("tasks");
-      }
-      catch (e) {
-        console.error(e);
-      }
-    });
-
-    const title = document.createElement("h2");
-    title.textContent = task.title;
-
-    if (task.description) {
-      const description = document.createElement("p");
-      description.textContent = task.description;
-      taskDiv.append(check, title, description, delBtn);
-    }
-    else {
-      taskDiv.append(check, title, delBtn);
-    }
-
-    (task.complete ? completeDiv : incompleteDiv).appendChild(taskDiv);
+    const taskDiv = createTaskDiv(task);
+    (task.complete ? completeDiv! : incompleteDiv!).appendChild(taskDiv);
   }
+}
 
-  const openModalButtons = document.querySelectorAll<HTMLButtonElement>("[data-modal-target]");
-  const closeModalButtons = document.querySelectorAll<HTMLButtonElement>("[data-close-button]");
-  const overlay = document.querySelector<HTMLDivElement>("#overlay");
+function setupModalOpen(button: HTMLButtonElement, overlay: HTMLDivElement) {
+  button.addEventListener("mouseup", () => {
+    const modal = document.querySelector<HTMLDivElement>(button.dataset.modalTarget!);
 
-  openModalButtons.forEach(button => {
-    button.addEventListener("mouseup", () => {
-      const modal = document.querySelector(button.dataset.modalTarget);
-      openModal(modal, overlay);
-    });
+    if (!modal) {
+      throw new Error("Open modal button is missing a target");
+    }
+
+    openModal(modal, overlay);
   });
+}
 
-  closeModalButtons.forEach(button => {
-    button.addEventListener("mouseup", () => {
-      const modal = button.closest(".modal");
-      closeModal(modal, overlay);
-    });
+function setupModalClose(button: HTMLButtonElement, overlay: HTMLDivElement) {
+  button.addEventListener("mouseup", () => {
+    const modal = button.closest<HTMLDivElement>(".modal");
+
+    if (!modal) {
+      throw new Error("Close modal button is not the child of a modal class");
+    }
+
+    closeModal(modal, overlay);
   });
+}
 
-  const createButton = document.querySelector<HTMLButtonElement>("#create-button");
+function setupCreateBtn(createButton: HTMLButtonElement) {
+  const accessToken = localStorage.getItem("accessToken");
 
   createButton.addEventListener("mouseup", async () => {
     try {
       const title = document.querySelector<HTMLTextAreaElement>("#task-title");
       const description = document.querySelector<HTMLTextAreaElement>("#task-description");
-      await createTask(accessToken, title.value, description.value);
+      await createTask(accessToken, title!.value, description!.value);
       changeState("tasks");
     }
     catch (e) {
@@ -259,7 +207,99 @@ function displayTasks(tasks: Task[]) {
   });
 }
 
-async function createTask(accessToken, title, description?) {
+function setupModal() {
+  const openModalButtons = document.querySelectorAll<HTMLButtonElement>("[data-modal-target]");
+  const closeModalButtons = document.querySelectorAll<HTMLButtonElement>("[data-close-button]");
+  const overlay = document.querySelector<HTMLDivElement>("#overlay");
+
+  openModalButtons.forEach(button => setupModalOpen(button, overlay!));
+  closeModalButtons.forEach(button => setupModalClose(button, overlay!));
+
+  const createButton = document.querySelector<HTMLButtonElement>("#create-button");
+  setupCreateBtn(createButton!);
+}
+
+async function setupTaskCheck(task: Task) {
+  const accessToken = localStorage.getItem("accessToken");
+
+  try {
+    const res = await fetch(`http://localhost:3000/user/tasks/${task.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({
+        complete: !task.complete
+      })
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error);
+    }
+
+    changeState("tasks");
+  }
+  catch (e) {
+    console.error(e);
+  }
+}
+
+async function setupTaskDelete(task: Task) {
+  const accessToken = localStorage.getItem("accessToken");
+
+  try {
+    const res = await fetch(`http://localhost:3000/user/tasks/${task.id}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`
+      }
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error);
+    }
+
+    changeState("tasks");
+  }
+  catch (e) {
+    console.error(e);
+  }
+}
+
+function createTaskDiv(task: Task) {
+  const taskDiv = document.createElement("div");
+  taskDiv.classList = "task";
+
+  const check = document.createElement("input");
+  check.type = "checkbox";
+  check.checked = task.complete;
+
+  check.addEventListener("change", () => setupTaskCheck(task));
+
+  const delBtn = document.createElement("button");
+  delBtn.textContent = "DELETE";
+
+  delBtn.addEventListener("mouseup", () => setupTaskDelete(task));
+
+  const title = document.createElement("h2");
+  title.textContent = task.title;
+
+  if (task.description) {
+    const description = document.createElement("p");
+    description.textContent = task.description;
+    taskDiv.append(check, title, description, delBtn);
+  }
+  else {
+    taskDiv.append(check, title, delBtn);
+  }
+
+  return taskDiv;
+}
+
+async function createTask(accessToken: string | null, title: string, description?: string) {
   const res = await fetch("http://localhost:3000/user/tasks", {
     method: "POST",
     headers: {
@@ -278,34 +318,57 @@ async function createTask(accessToken, title, description?) {
   }
 }
 
-function openModal(modal, overlay) {
+function openModal(modal: HTMLDivElement, overlay: HTMLDivElement) {
   if (!modal) return;
   modal.classList.add("active");
   overlay.classList.add("active");
 }
 
-function closeModal(modal, overlay) {
+function closeModal(modal: HTMLDivElement, overlay: HTMLDivElement) {
   if (!modal) return;
   modal.classList.remove("active");
   overlay.classList.remove("active");
 }
 
-// TODO: Need to handle errors from getTasks()
 async function showTasks() {
-  const tasks = await getTasks();
-  displayTasks(tasks);
+  try {
+    const tasks = await getTasks();
+    displayTasks(tasks);
+    setupModal();
+  }
+  catch (e) {
+    console.error(e);
+  }
+}
+
+function setupRegister() {
+  try {
+    displayRegister();
+    onRegister();
+  }
+  catch (e) {
+    console.error(e);
+  }
+}
+
+function setupLogin() {
+  try {
+    displayLogin();
+    onLogin();
+  }
+  catch (e) {
+    console.error(e);
+  }
 }
 
 function changeState(state: string) {
   switch (state) {
     case "register": {
-      displayRegister();
-      onRegister();
+      setupRegister();
       break;
     }
     case "login": {
-      displayLogin();
-      onLogin();
+      setupLogin();
       break;
     }
     case "tasks": {
@@ -317,6 +380,11 @@ function changeState(state: string) {
 
 function onLogin() {
   const loginForm = document.querySelector<HTMLFormElement>("#login");
+  const errP= document.querySelector<HTMLParagraphElement>("#error");
+
+  if (!loginForm || !errP) {
+    throw new Error("Login form has not loaded yet");
+  }
 
   loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -326,8 +394,7 @@ function onLogin() {
       changeState("tasks");
     }
     catch (e) {
-      const errP = document.querySelector<HTMLParagraphElement>("#error");
-      errP.textContent = e.message;
+      errP.textContent = (e as Error).message;
       errP.style.visibility = "visible";
       console.error(e);
     }
@@ -337,6 +404,10 @@ function onLogin() {
 function onRegister() {
   const registerForm = document.querySelector<HTMLFormElement>("#register");
   const loginLink = document.querySelector<HTMLLinkElement>("#login-link");
+
+  if (!registerForm || !loginLink) {
+    throw new Error("Registration form has not loaded yet");
+  }
 
   registerForm.addEventListener("submit", async (event) => {
     event.preventDefault();
