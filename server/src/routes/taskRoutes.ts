@@ -57,7 +57,7 @@ router.get("/user/tasks", authenticateToken, async (req, res) => {
 
 router.patch("/user/tasks/:taskId", authenticateToken, async (req, res) => {
   const { taskId } = req.params;
-  const { complete } = req.body;
+  const { title, description, complete } = req.body;
 
   if (!req.userId) {
     return res.status(401).json({ error: "Unauthenticated" });
@@ -70,6 +70,8 @@ router.patch("/user/tasks/:taskId", authenticateToken, async (req, res) => {
         userId: req.userId
       },
       data: {
+        title: title,
+        description: description,
         complete: complete
       }
     });

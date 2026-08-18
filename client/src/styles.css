@@ -148,12 +148,12 @@ form button {
     color: white;
 }
 
-#task-title {
+.task-title {
     height: 30px;
     width: 300px;
 }
 
-#task-description {
+.task-description {
     height: 300px;
     width: 500px;
 }

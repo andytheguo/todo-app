@@ -4,6 +4,9 @@ import type { Task } from './types';
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
+// TODO:
+// Handle errors better - don't just print them out to console
+
 async function register() {
   const name = document.querySelector<HTMLInputElement>("#name");
   const email = document.querySelector<HTMLInputElement>("#email");
@@ -128,7 +131,7 @@ function displayLogin() {
   }
 }
 
-function displayTasks(tasks: Task[]) {
+async function displayTasks() {
   if (!app) return;
 
   app.innerHTML = `
@@ -150,8 +153,8 @@ function displayTasks(tasks: Task[]) {
         <button data-close-button>&times;</button>
       </div>
       <div class="modal-body">
-        <textarea id="task-title">Title</textarea>
-        <textarea id="task-description">Description...</textarea>
+        <textarea class="task-title">Title</textarea>
+        <textarea class="task-description">Description...</textarea>
         <button id="create-button">Create Task</button>
       </div>
     </div>
@@ -161,14 +164,15 @@ function displayTasks(tasks: Task[]) {
         <button data-close-button>&times;</button>
       </div>
       <div class="modal-body">
-        <textarea id="task-title"></textarea>
-        <textarea id="task-description"></textarea>
+        <textarea class="task-title"></textarea>
+        <textarea class="task-description"></textarea>
         <button id="save-button">Save</button>
       </div>
     </div>
     <div id="overlay"></div>
     `;
 
+  const tasks = await getTasks();
   const incompleteDiv = document.querySelector<HTMLDivElement>("#incomplete-tasks");
   const completeDiv = document.querySelector<HTMLDivElement>("#complete-tasks");
 
@@ -203,19 +207,31 @@ function setupModalClose(button: HTMLButtonElement, overlay: HTMLDivElement) {
 }
 
 function setupCreateBtn(createButton: HTMLButtonElement) {
-  const accessToken = localStorage.getItem("accessToken");
-
   createButton.addEventListener("mouseup", async () => {
     try {
-      const title = document.querySelector<HTMLTextAreaElement>("#task-title");
-      const description = document.querySelector<HTMLTextAreaElement>("#task-description");
-      await createTask(accessToken, title!.value, description!.value);
+      const title = document.querySelector<HTMLTextAreaElement>("#task-modal .task-title");
+      const description = document.querySelector<HTMLTextAreaElement>("#task-modal .task-description");
+      await createTask(title!.value, description!.value);
       changeState("tasks");
     }
     catch (e) {
       console.error(e);
     }
   });
+}
+
+function setupSaveBtn(task: Task, saveButton: HTMLButtonElement) {
+  try {
+    saveButton.addEventListener("mouseup", async () => {
+      const title = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-title");
+      const description = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-description");
+      await patchTask(task, title!.value, description!.value);
+      changeState("tasks");
+    });
+  }
+  catch (e) {
+    console.error(e);
+  }
 }
 
 function setupModals() {
@@ -281,7 +297,16 @@ async function setupTaskDelete(task: Task) {
 }
 
 async function setupTaskEdit(task: Task) {
-  return;
+  const editTitle = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-title");
+  const editDesciption = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-description");
+
+  if (!editTitle || !editDesciption) {
+    throw new Error("");
+  }
+
+  editTitle.textContent = task.title;
+
+  if (task.description) editDesciption.textContent = task.description;
 }
 
 function createTaskDiv(task: Task) {
@@ -298,11 +323,15 @@ function createTaskDiv(task: Task) {
   delBtn.id = "delete-btn";
   delBtn.addEventListener("mouseup", () => setupTaskDelete(task));
 
+  const saveBtn = document.querySelector<HTMLButtonElement>("#save-button");
   const editBtn = document.createElement("button");
   editBtn.textContent = "EDIT";
   editBtn.id = "edit-btn";
   editBtn.dataset.modalTarget = "#edit-modal";
-  editBtn.addEventListener("mouseup", () => setupTaskEdit(task));
+  editBtn.addEventListener("mouseup", () => {
+    setupTaskEdit(task)
+    setupSaveBtn(task, saveBtn!);
+  });
 
   const title = document.createElement("h2");
   title.textContent = task.title;
@@ -319,7 +348,30 @@ function createTaskDiv(task: Task) {
   return taskDiv;
 }
 
-async function createTask(accessToken: string | null, title: string, description?: string) {
+async function patchTask(task: Task, title: string, description?: string) {
+  const accessToken = localStorage.getItem("accessToken");
+
+  const res = await fetch(`http://localhost:3000/user/tasks/${task.id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${accessToken}`
+    },
+    body: JSON.stringify({
+      title: title,
+      description: description
+    })
+  });
+
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.error);
+  }
+}
+
+async function createTask(title: string, description?: string) {
+  const accessToken = localStorage.getItem("accessToken");
+
   const res = await fetch("http://localhost:3000/user/tasks", {
     method: "POST",
     headers: {
@@ -352,8 +404,7 @@ function closeModal(modal: HTMLDivElement, overlay: HTMLDivElement) {
 
 async function showTasks() {
   try {
-    const tasks = await getTasks();
-    displayTasks(tasks);
+    await displayTasks();
     setupModals();
   }
   catch (e) {
