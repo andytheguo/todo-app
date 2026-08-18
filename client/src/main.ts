@@ -155,6 +155,17 @@ function displayTasks(tasks: Task[]) {
         <button id="create-button">Create Task</button>
       </div>
     </div>
+    <div class="modal" id="edit-modal">
+      <div class="modal-header">
+        <h1>Edit Task</h1>
+        <button data-close-button>&times;</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="task-title"></textarea>
+        <textarea id="task-description"></textarea>
+        <button id="save-button">Save</button>
+      </div>
+    </div>
     <div id="overlay"></div>
     `;
 
@@ -207,7 +218,7 @@ function setupCreateBtn(createButton: HTMLButtonElement) {
   });
 }
 
-function setupModal() {
+function setupModals() {
   const openModalButtons = document.querySelectorAll<HTMLButtonElement>("[data-modal-target]");
   const closeModalButtons = document.querySelectorAll<HTMLButtonElement>("[data-close-button]");
   const overlay = document.querySelector<HTMLDivElement>("#overlay");
@@ -269,6 +280,10 @@ async function setupTaskDelete(task: Task) {
   }
 }
 
+async function setupTaskEdit(task: Task) {
+  return;
+}
+
 function createTaskDiv(task: Task) {
   const taskDiv = document.createElement("div");
   taskDiv.classList = "task";
@@ -276,13 +291,18 @@ function createTaskDiv(task: Task) {
   const check = document.createElement("input");
   check.type = "checkbox";
   check.checked = task.complete;
-
   check.addEventListener("change", () => setupTaskCheck(task));
 
   const delBtn = document.createElement("button");
   delBtn.textContent = "DELETE";
-
+  delBtn.id = "delete-btn";
   delBtn.addEventListener("mouseup", () => setupTaskDelete(task));
+
+  const editBtn = document.createElement("button");
+  editBtn.textContent = "EDIT";
+  editBtn.id = "edit-btn";
+  editBtn.dataset.modalTarget = "#edit-modal";
+  editBtn.addEventListener("mouseup", () => setupTaskEdit(task));
 
   const title = document.createElement("h2");
   title.textContent = task.title;
@@ -290,10 +310,10 @@ function createTaskDiv(task: Task) {
   if (task.description) {
     const description = document.createElement("p");
     description.textContent = task.description;
-    taskDiv.append(check, title, description, delBtn);
+    taskDiv.append(check, title, description, delBtn, editBtn);
   }
   else {
-    taskDiv.append(check, title, delBtn);
+    taskDiv.append(check, title, delBtn, editBtn);
   }
 
   return taskDiv;
@@ -334,7 +354,7 @@ async function showTasks() {
   try {
     const tasks = await getTasks();
     displayTasks(tasks);
-    setupModal();
+    setupModals();
   }
   catch (e) {
     console.error(e);

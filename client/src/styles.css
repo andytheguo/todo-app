@@ -52,6 +52,7 @@ form button {
     padding-left: 15px;
     width: 80%;
     border-radius: 10px;
+    min-height: 125px;
 }
 
 .task input[type="checkbox"] {
@@ -66,15 +67,28 @@ form button {
     position: absolute;
     height: 30px;
     width: 60px;
-    bottom: 10%;
-    right: 3%;
     background-color: transparent;
     border: transparent;
-    color: red;
 }
 
-.task button:hover {
+.task #delete-btn {
+    color: red;
+    left: 7px;
+    bottom: 2px;
+}
+
+.task #edit-btn {
+    color: green;
+    left: 60px;
+    bottom: 2px;
+}
+
+.task #delete-btn:hover {
     color: darkred;
+}
+
+.task #edit-btn:hover {
+    color: darkgreen;
 }
 
 #tasks-header {
@@ -104,6 +118,7 @@ form button {
     border-radius: 10px;
     height: 55vh;
     width: 70vh;
+    z-index: 2;
 }
 
 .modal.active {
@@ -141,10 +156,6 @@ form button {
 #task-description {
     height: 300px;
     width: 500px;
-}
-
-#task-modal {
-    z-index: 2;
 }
 
 #overlay {
