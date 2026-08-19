@@ -53,6 +53,7 @@ form button {
     width: 80%;
     border-radius: 10px;
     min-height: 125px;
+    white-space: pre-wrap;
 }
 
 .task input[type="checkbox"] {
