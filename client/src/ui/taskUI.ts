@@ -44,11 +44,8 @@ export async function displayTasks() {
     `;
 
   const tasks = await getTasks();
-  const incompleteDiv = document.querySelector<HTMLDivElement>("#incomplete-tasks");
-  const completeDiv = document.querySelector<HTMLDivElement>("#complete-tasks");
 
   for (const task of tasks) {
-    const taskDiv = createTaskDiv(task);
-    (task.complete ? completeDiv! : incompleteDiv!).appendChild(taskDiv);
+    createTaskDiv(task);
   }
 }

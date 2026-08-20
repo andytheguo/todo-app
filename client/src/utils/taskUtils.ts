@@ -3,7 +3,7 @@ import { changeState } from "./stateManager";
 import { displayTasks } from "../ui/taskUI";
 import { setupModals } from "./modalUtils";
 
-async function setupTaskCheck(task: Task) {
+async function updateTask(task: Task, complete: boolean) {
   const accessToken = localStorage.getItem("accessToken");
 
   try {
@@ -14,7 +14,7 @@ async function setupTaskCheck(task: Task) {
         "Authorization": `Bearer ${accessToken}`
       },
       body: JSON.stringify({
-        complete: !task.complete
+        complete: complete
       })
     });
 
@@ -22,8 +22,6 @@ async function setupTaskCheck(task: Task) {
       const data = await res.json();
       throw new Error(data.error);
     }
-
-    changeState("tasks");
   }
   catch (e) {
     console.error(e);
@@ -45,8 +43,6 @@ async function setupTaskDelete(task: Task) {
       const data = await res.json();
       throw new Error(data.error);
     }
-
-    changeState("tasks");
   }
   catch (e) {
     console.error(e);
@@ -58,7 +54,7 @@ async function setupTaskEdit(task: Task) {
   const editDesciption = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-description");
 
   if (!editTitle || !editDesciption) {
-    throw new Error("");
+    throw new Error("Edit modal has not loaded yet");
   }
 
   editTitle.textContent = task.title;
@@ -81,18 +77,30 @@ function setupSaveBtn(task: Task, saveButton: HTMLButtonElement) {
 }
 
 export function createTaskDiv(task: Task) {
+  const incompleteDiv = document.querySelector<HTMLDivElement>("#incomplete-tasks");
+  const completeDiv = document.querySelector<HTMLDivElement>("#complete-tasks");
+
   const taskDiv = document.createElement("div");
   taskDiv.classList = "task";
 
   const check = document.createElement("input");
   check.type = "checkbox";
   check.checked = task.complete;
-  check.addEventListener("change", () => setupTaskCheck(task));
+  check.addEventListener("change", async () => {
+    // TODO: Potential bug?
+    await updateTask(task, check.checked);
+
+    const dest = check.checked ? completeDiv : incompleteDiv;
+    dest!.appendChild(taskDiv);
+  });
 
   const delBtn = document.createElement("button");
   delBtn.textContent = "DELETE";
   delBtn.id = "delete-btn";
-  delBtn.addEventListener("mouseup", () => setupTaskDelete(task));
+  delBtn.addEventListener("mouseup", async () => {
+    await setupTaskDelete(task)
+    taskDiv.remove();
+  });
 
   const saveBtn = document.querySelector<HTMLButtonElement>("#save-button");
   const editBtn = document.createElement("button");
@@ -116,7 +124,7 @@ export function createTaskDiv(task: Task) {
     taskDiv.append(check, title, delBtn, editBtn);
   }
 
-  return taskDiv;
+  (task.complete ? completeDiv! : incompleteDiv!).appendChild(taskDiv);
 }
 
 async function patchTask(task: Task, title: string, description?: string) {
