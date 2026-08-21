@@ -22,6 +22,8 @@ async function updateTask(task: Task, complete: boolean) {
       const data = await res.json();
       throw new Error(data.error);
     }
+
+    task.complete = complete;
   }
   catch (e) {
     console.error(e);
@@ -62,13 +64,18 @@ async function setupTaskEdit(task: Task) {
   if (task.description) editDesciption.textContent = task.description;
 }
 
-function setupSaveBtn(task: Task, saveButton: HTMLButtonElement) {
+function setupSaveBtn(task: Task, saveButton: HTMLButtonElement, title: HTMLHeadElement, description: HTMLParagraphElement) {
   try {
     saveButton.addEventListener("mouseup", async () => {
-      const title = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-title");
-      const description = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-description");
-      await patchTask(task, title!.value, description!.value);
-      changeState("tasks");
+      const editTitle = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-title");
+      const editDesciption = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-description");
+      await patchTask(task, editTitle!.value, editDesciption!.value);
+
+      task.title = editTitle!.value;
+      task.description = editDesciption!.value;
+
+      title.textContent = task.title;
+      description.textContent = task.description;
     });
   }
   catch (e) {
@@ -102,6 +109,11 @@ export function createTaskDiv(task: Task) {
     taskDiv.remove();
   });
 
+  const title = document.createElement("h2");
+  title.textContent = task.title;
+
+  const description = document.createElement("p");
+
   const saveBtn = document.querySelector<HTMLButtonElement>("#save-button");
   const editBtn = document.createElement("button");
   editBtn.textContent = "EDIT";
@@ -109,14 +121,10 @@ export function createTaskDiv(task: Task) {
   editBtn.dataset.modalTarget = "#edit-modal";
   editBtn.addEventListener("mouseup", () => {
     setupTaskEdit(task)
-    setupSaveBtn(task, saveBtn!);
+    setupSaveBtn(task, saveBtn!, title, description);
   });
 
-  const title = document.createElement("h2");
-  title.textContent = task.title;
-
   if (task.description) {
-    const description = document.createElement("p");
     description.textContent = task.description;
     taskDiv.append(check, title, description, delBtn, editBtn);
   }
