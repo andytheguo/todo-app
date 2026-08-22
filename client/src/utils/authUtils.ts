@@ -15,7 +15,7 @@ async function register() {
     throw new Error("Passwords must match")
   }
 
-  const res = await fetch("http://localhost:3000/register", {
+  const res = await authFetch("http://localhost:3000/register", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -135,4 +135,60 @@ export function setupLogin() {
   catch (e) {
     console.error(e);
   }
+}
+
+async function refreshToken() {
+  const refreshToken = localStorage.getItem("refreshToken");
+
+  if (!refreshToken) {
+    throw new Error("No refresh token");
+  }
+
+  const res = await authFetch("http://localhost:3000/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      refreshToken: refreshToken
+    })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error);
+  }
+
+  localStorage.setItem("accessToken", data.accessToken);
+
+  return data.accessToken;
+}
+
+export async function authFetch(input: string, init: RequestInit) {
+  let accessToken = localStorage.getItem("accessToken");
+
+  if (!accessToken) {
+    throw new Error("No access token");
+  }
+
+  const headers = new Headers(init.headers);
+  headers.set("Authorization", `Bearer ${accessToken}`);
+
+  init.headers = headers;
+
+  let res = await fetch(input, init);
+
+  if (res.status !== 401) {
+    return res;
+  }
+
+  accessToken = await refreshToken();
+  headers.set("Authorization", `Bearer ${accessToken}`);;
+
+  init.headers = headers;
+
+  res = await fetch(input, init);
+
+  return res;
 }

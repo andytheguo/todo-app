@@ -6,16 +6,19 @@ export async function displayTasks() {
   if (!app) return;
 
   app.innerHTML = `
-    <div id="tasks-header">
-      <h1>Tasks</h1>
-      <button data-modal-target="#task-modal" id="add-button">Add Task</button>
-    </div>
-    <div id="tasks">
-      <div id="incomplete-tasks">
-        <h2>In Progress</h2>
+    <div class="dashboard">
+      <div id="tasks-header">
+        <h1>Tasks</h1>
+        <button data-modal-target="#task-modal" id="add-button">Add Task</button>
+        <button id="sign-out">Sign out</button>
       </div>
-      <div id="complete-tasks">
-        <h2>Completed</h2>
+      <div id="tasks">
+        <div id="incomplete-tasks">
+          <h2>In Progress</h2>
+        </div>
+        <div id="complete-tasks">
+          <h2>Completed</h2>
+        </div>
       </div>
     </div>
     <div class="modal" id="task-modal">

@@ -2,6 +2,7 @@ import type { Task } from "../types";
 import { changeState } from "./stateManager";
 import { displayTasks } from "../ui/taskUI";
 import { setupModals } from "./modalUtils";
+import { authFetch } from "./authUtils";
 
 async function updateTask(task: Task, complete: boolean) {
   const accessToken = localStorage.getItem("accessToken");
@@ -31,15 +32,8 @@ async function updateTask(task: Task, complete: boolean) {
 }
 
 async function setupTaskDelete(task: Task) {
-  const accessToken = localStorage.getItem("accessToken");
-
   try {
-    const res = await fetch(`http://localhost:3000/user/tasks/${task.id}`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`
-      }
-    });
+    const res = await authFetch(`http://localhost:3000/user/tasks/${task.id}`, { method: "DELETE" });
 
     if (!res.ok) {
       const data = await res.json();
@@ -120,6 +114,7 @@ export function createTaskDiv(task: Task) {
   editBtn.id = "edit-btn";
   editBtn.dataset.modalTarget = "#edit-modal";
   editBtn.addEventListener("mouseup", () => {
+    // TODO: Optimise this
     setupTaskEdit(task)
     setupSaveBtn(task, saveBtn!, title, description);
   });
@@ -136,13 +131,10 @@ export function createTaskDiv(task: Task) {
 }
 
 async function patchTask(task: Task, title: string, description?: string) {
-  const accessToken = localStorage.getItem("accessToken");
-
-  const res = await fetch(`http://localhost:3000/user/tasks/${task.id}`, {
+  const res = await authFetch(`http://localhost:3000/user/tasks/${task.id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${accessToken}`
     },
     body: JSON.stringify({
       title: title,
@@ -157,13 +149,10 @@ async function patchTask(task: Task, title: string, description?: string) {
 }
 
 async function createTask(title: string, description?: string) {
-  const accessToken = localStorage.getItem("accessToken");
-
-  const res = await fetch("http://localhost:3000/user/tasks", {
+  const res = await authFetch("http://localhost:3000/user/tasks", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${accessToken}`
     },
     body: JSON.stringify({
       title: title,
@@ -193,6 +182,29 @@ function setupCreateBtn() {
   });
 }
 
+function setupSignOutBtn() {
+  const refreshToken = localStorage.getItem("refreshToken");
+  const signOutBtn = document.querySelector<HTMLButtonElement>("#sign-out");
+
+  signOutBtn!.addEventListener("mouseup", async () => {
+    try {
+      await authFetch("http://localhost:3000/logout", {
+        method: "DELETE",
+        body: JSON.stringify({
+          rerfeshToken: refreshToken
+        })
+      });
+
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("accessToken");
+      changeState("register");
+    }
+    catch (e) {
+      console.error(e);
+    }
+  });
+}
+
 export async function getTasks() {
   const accessToken = localStorage.getItem("accessToken");
 
@@ -200,12 +212,7 @@ export async function getTasks() {
     throw new Error("No access token");
   }
 
-  const res = await fetch("http://localhost:3000/user/tasks", {
-    method: "GET",
-    headers: {
-      "Authorization": `Bearer ${accessToken}`
-    }
-  });
+  const res = await authFetch("http://localhost:3000/user/tasks", { method: "GET" });
   const data = await res.json();
 
   if (!res.ok) {
@@ -222,6 +229,7 @@ export async function setupTasks() {
   try {
     await displayTasks();
     setupCreateBtn()
+    setupSignOutBtn();
     setupModals();
   }
   catch (e) {
