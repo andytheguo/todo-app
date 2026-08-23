@@ -3,6 +3,8 @@ import express from 'express';
 import { prisma } from './lib/prisma.js';
 import cors from 'cors';
 
+import { setupTokenCleanup } from "./jobs/cleanupTokens.js";
+
 import userRoutes from './routes/userRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -38,3 +40,5 @@ app.listen(port, () => {
 app.use(userRoutes);
 app.use(taskRoutes);
 app.use(authRoutes);
+
+setupTokenCleanup();

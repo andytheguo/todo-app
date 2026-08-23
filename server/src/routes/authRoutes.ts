@@ -19,7 +19,7 @@ router.post("/token", async (req, res) => {
   });
 
   if (!token) {
-    return res.status(403).json({ error: "Invalid refresh token" });
+    return res.status(403).json({ error: "Invalid or expired refresh token" });
   }
 
   try {

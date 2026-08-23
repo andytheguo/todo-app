@@ -59,9 +59,13 @@ router.post("/login", async (req, res) => {
     const accessToken = genAccessToken(user.id);
     const refreshToken = genRefreshToken(user.id);
 
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+
     await prisma.refreshToken.create({
       data: {
         token: refreshToken,
+        expires: date,
         user: {
           connect: {
             id: user.id
