@@ -55,9 +55,11 @@ async function setupTaskEdit(task: Task) {
   if (task.description) editDesciption.textContent = task.description;
 }
 
-function setupSaveBtn(task: Task, saveButton: HTMLButtonElement, title: HTMLHeadElement, description: HTMLParagraphElement) {
-  try {
-    saveButton.addEventListener("mouseup", async () => {
+function setupSaveBtn(task: Task, title: HTMLHeadElement, description: HTMLParagraphElement) {
+  const saveBtn = document.querySelector<HTMLButtonElement>("#save-button");
+
+  saveBtn!.onclick = async () => {
+    try {
       const editTitle = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-title");
       const editDesciption = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-description");
       await patchTask(task, editTitle!.value, editDesciption!.value);
@@ -67,10 +69,10 @@ function setupSaveBtn(task: Task, saveButton: HTMLButtonElement, title: HTMLHead
 
       title.textContent = task.title;
       description.textContent = task.description;
-    });
-  }
-  catch (e) {
-    console.error(e);
+    }
+    catch (e) {
+      console.error(e);
+    }
   }
 }
 
@@ -105,15 +107,13 @@ export function createTaskDiv(task: Task) {
 
   const description = document.createElement("p");
 
-  const saveBtn = document.querySelector<HTMLButtonElement>("#save-button");
   const editBtn = document.createElement("button");
   editBtn.textContent = "EDIT";
   editBtn.id = "edit-btn";
   editBtn.dataset.modalTarget = "#edit-modal";
   editBtn.addEventListener("mouseup", () => {
-    // TODO: Optimise this
     setupTaskEdit(task)
-    setupSaveBtn(task, saveBtn!, title, description);
+    setupSaveBtn(task, title, description);
   });
 
   if (task.description) {
