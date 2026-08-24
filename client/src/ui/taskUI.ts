@@ -13,11 +13,13 @@ export async function displayTasks() {
         <button id="sign-out">Sign out</button>
       </div>
       <div id="tasks">
-        <div id="incomplete-tasks">
+        <div class="task-list">
           <h2>In Progress</h2>
+          <div id="incomplete-tasks"></div>
         </div>
-        <div id="complete-tasks">
+        <div class="task-list">
           <h2>Completed</h2>
+          <div id="complete-tasks"></div>
         </div>
       </div>
     </div>

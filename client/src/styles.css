@@ -35,7 +35,7 @@ form button {
     column-gap: 30px;
 }
 
-#incomplete-tasks, #complete-tasks {
+.task-list {
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -54,6 +54,14 @@ form button {
     border-radius: 10px;
     min-height: 125px;
     white-space: pre-wrap;
+    flex-shrink: 0;
+}
+
+#incomplete-tasks, #complete-tasks {
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+    overflow-y: auto;
 }
 
 .task input[type="checkbox"] {
