@@ -29,8 +29,8 @@ export async function displayTasks() {
         <button data-close-button>&times;</button>
       </div>
       <div class="modal-body">
-        <textarea class="task-title">Title</textarea>
-        <textarea class="task-description">Description...</textarea>
+        <textarea class="task-title" placeholder="Title"></textarea>
+        <textarea class="task-description" placeholder="Description..."></textarea>
         <button id="create-button">Create Task</button>
       </div>
     </div>

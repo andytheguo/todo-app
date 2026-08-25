@@ -49,7 +49,6 @@ form button {
 .task {
     position: relative;
     background: lightgray;
-    padding-left: 15px;
     width: 80%;
     border-radius: 10px;
     min-height: 125px;
@@ -64,39 +63,43 @@ form button {
     overflow-y: auto;
 }
 
+#task-body {
+    padding-left: 15px;
+}
+
 .task input[type="checkbox"] {
     position: absolute;
     height: 20px;
     width: 20px;
-    top: 20%;
+    top: 10%;
     right: 3%;
 }
 
-.task button {
-    position: absolute;
+#task-buttons {
+    display: flex;
+    padding-left: 7px;
+}
+
+#task-buttons button {
     height: 30px;
     width: 60px;
     background-color: transparent;
     border: transparent;
 }
 
-.task #delete-btn {
+#delete-btn {
     color: red;
-    left: 7px;
-    bottom: 2px;
 }
 
-.task #edit-btn {
+#edit-btn {
     color: green;
-    left: 60px;
-    bottom: 2px;
 }
 
-.task #delete-btn:hover {
+#delete-btn:hover {
     color: darkred;
 }
 
-.task #edit-btn:hover {
+#edit-btn:hover {
     color: darkgreen;
 }
 

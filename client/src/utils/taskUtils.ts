@@ -94,6 +94,9 @@ export function createTaskDiv(task: Task) {
     dest!.appendChild(taskDiv);
   });
 
+  const buttonDiv = document.createElement("div");
+  buttonDiv.id = "task-buttons";
+
   const delBtn = document.createElement("button");
   delBtn.textContent = "DELETE";
   delBtn.id = "delete-btn";
@@ -101,6 +104,9 @@ export function createTaskDiv(task: Task) {
     await setupTaskDelete(task)
     taskDiv.remove();
   });
+
+  const bodyDiv = document.createElement("div");
+  bodyDiv.id = "task-body";
 
   const title = document.createElement("h2");
   title.textContent = task.title;
@@ -116,12 +122,16 @@ export function createTaskDiv(task: Task) {
     setupSaveBtn(task, title, description);
   });
 
+  buttonDiv.append(delBtn, editBtn);
+
   if (task.description) {
     description.textContent = task.description;
-    taskDiv.append(check, title, description, delBtn, editBtn);
+    bodyDiv.append(title, description, check);
+    taskDiv.append(bodyDiv, buttonDiv);
   }
   else {
-    taskDiv.append(check, title, delBtn, editBtn);
+    bodyDiv.append(title, check);
+    taskDiv.append(bodyDiv, buttonDiv);
   }
 
   (task.complete ? completeDiv! : incompleteDiv!).appendChild(taskDiv);
