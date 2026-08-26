@@ -1,8 +1,10 @@
-import "./styles.css";
+import "./styles/dashboard.css";
+import "./styles/global.css";
+import "./styles/modal.css";
+import "./styles/tasks.css";
 import { changeState } from "./utils/stateManager";
 
 // TODO:
 // Handle errors better - don't just print them out to console
-// Fix bug where create doesnt reset textContent
-// Fix bug where edit doesnt work on newly created tasks
+// Fix bug where edit modal doesnt open on newly created tasks
 changeState("register");

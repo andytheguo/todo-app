@@ -25,7 +25,7 @@ export function displayLogin() {
           <input id="email" type="text" placeholder="Email" required>
           <input id="password" type="password" placeholder="Password" required>
           <button type="submit">Login</button>
-          <p id="error">
+          <p class="error">
         </form>
       </div>
       `;

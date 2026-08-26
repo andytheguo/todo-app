@@ -1,0 +1,69 @@
+.modal {
+    display: none;
+    position: fixed;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 20px;
+    align-items: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: lightskyblue;
+    border-radius: 10px;
+    height: 55vh;
+    width: 70vh;
+    z-index: 2;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    row-gap: 10px;
+}
+
+.modal-body textarea {
+    resize: none;
+    font-size: 20px;
+}
+
+.modal-header button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+}
+
+.modal-header h1 {
+    color: white;
+}
+
+#overlay {
+    position: fixed;
+    opacity: 0;
+    inset: 0;
+    height: 100vh;
+    width: 100vw;
+    background: rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    z-index: 1;
+}
+
+#overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.task-title {
+    height: 30px;
+    width: 300px;
+}
+
+.task-description {
+    height: 300px;
+    width: 500px;
+}

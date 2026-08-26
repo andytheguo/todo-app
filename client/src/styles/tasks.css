@@ -1,0 +1,50 @@
+.task {
+    position: relative;
+    background: lightgray;
+    width: 80%;
+    border-radius: 10px;
+    min-height: 125px;
+    white-space: pre-wrap;
+    flex-shrink: 0;
+}
+
+
+#task-body {
+    padding-left: 15px;
+}
+
+.task input[type="checkbox"] {
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    top: 15%;
+    right: 3%;
+}
+
+#task-buttons {
+    display: flex;
+    padding-left: 7px;
+}
+
+#task-buttons button {
+    height: 30px;
+    width: 60px;
+    background-color: transparent;
+    border: transparent;
+}
+
+#delete-btn {
+    color: red;
+}
+
+#edit-btn {
+    color: green;
+}
+
+#delete-btn:hover {
+    color: darkred;
+}
+
+#edit-btn:hover {
+    color: darkgreen;
+}

@@ -32,6 +32,7 @@ export async function displayTasks() {
         <textarea class="task-title" placeholder="Title"></textarea>
         <textarea class="task-description" placeholder="Description..."></textarea>
         <button id="create-button">Create Task</button>
+        <p class="error" id="create-error">
       </div>
     </div>
     <div class="modal" id="edit-modal">
@@ -43,6 +44,7 @@ export async function displayTasks() {
         <textarea class="task-title"></textarea>
         <textarea class="task-description"></textarea>
         <button id="save-button">Save</button>
+        <p class="error" id="save-error">
       </div>
     </div>
     <div id="overlay"></div>

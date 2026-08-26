@@ -70,9 +70,9 @@ async function login() {
 
 function onLogin() {
   const loginForm = document.querySelector<HTMLFormElement>("#login");
-  const errP= document.querySelector<HTMLParagraphElement>("#error");
+  const err = document.querySelector<HTMLParagraphElement>(".error");
 
-  if (!loginForm || !errP) {
+  if (!loginForm || !err) {
     throw new Error("Login form has not loaded yet");
   }
 
@@ -84,8 +84,8 @@ function onLogin() {
       changeState("tasks");
     }
     catch (e) {
-      errP.textContent = (e as Error).message;
-      errP.style.visibility = "visible";
+      err.textContent = (e as Error).message;
+      err.classList.add("active");
       console.error(e);
     }
   });

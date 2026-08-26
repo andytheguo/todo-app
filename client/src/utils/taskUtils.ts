@@ -57,9 +57,11 @@ async function setupTaskEdit(task: Task) {
 
 function setupSaveBtn(task: Task, title: HTMLHeadElement, description: HTMLParagraphElement) {
   const saveBtn = document.querySelector<HTMLButtonElement>("#save-button");
+  const err = document.querySelector<HTMLParagraphElement>("#save-error");
 
   saveBtn!.onclick = async () => {
     try {
+      err!.classList.remove("active");
       const editTitle = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-title");
       const editDesciption = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-description");
       await patchTask(task, editTitle!.value, editDesciption!.value);
@@ -71,6 +73,8 @@ function setupSaveBtn(task: Task, title: HTMLHeadElement, description: HTMLParag
       description.textContent = task.description;
     }
     catch (e) {
+      err!.textContent = (e as Error).message;
+      err!.classList.add("active");
       console.error(e);
     }
   }
@@ -178,9 +182,11 @@ async function createTask(title: string, description?: string) {
 
 function setupCreateBtn() {
   const createButton = document.querySelector<HTMLButtonElement>("#create-button");
+  const err = document.querySelector<HTMLParagraphElement>("#create-error");
 
   createButton!.addEventListener("mouseup", async () => {
     try {
+      err!.classList.remove("active");
       const title = document.querySelector<HTMLTextAreaElement>("#task-modal .task-title");
       const description = document.querySelector<HTMLTextAreaElement>("#task-modal .task-description");
       const task = await createTask(title!.value, description!.value);
@@ -188,6 +194,8 @@ function setupCreateBtn() {
       createTaskDiv({ id: task.id, title: task.title, description: task.description } as Task);
     }
     catch (e) {
+      err!.textContent = (e as Error).message;
+      err!.classList.add("active");
       console.error(e);
     }
   });
