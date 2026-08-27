@@ -1,4 +1,6 @@
 .task {
+    display: flex;
+    flex-direction: column;
     position: relative;
     background: lightgray;
     width: 80%;
@@ -7,7 +9,6 @@
     white-space: pre-wrap;
     flex-shrink: 0;
 }
-
 
 #task-body {
     padding-left: 15px;
@@ -24,6 +25,7 @@
 #task-buttons {
     display: flex;
     padding-left: 7px;
+    margin-top: auto;
 }
 
 #task-buttons button {

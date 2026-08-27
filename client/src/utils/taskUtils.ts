@@ -1,7 +1,7 @@
 import type { Task } from "../types";
 import { changeState } from "./stateManager";
 import { displayTasks } from "../ui/taskUI";
-import { setupModals } from "./modalUtils";
+import { setupModals, setupTaskBtns } from "./modalUtils";
 import { authFetch } from "./authUtils";
 
 async function updateTask(task: Task, complete: boolean) {
@@ -244,6 +244,7 @@ export async function setupTasks() {
     setupCreateBtn()
     setupSignOutBtn();
     setupModals();
+    setupTaskBtns();
   }
   catch (e) {
     console.error(e);

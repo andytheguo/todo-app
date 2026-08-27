@@ -39,6 +39,39 @@ export function setupModals() {
   const closeModalButtons = document.querySelectorAll<HTMLButtonElement>("[data-close-button]");
   const overlay = document.querySelector<HTMLDivElement>("#overlay");
 
+  if (!overlay) {
+    throw new Error("Login form has not loaded yet");
+  }
+
   openModalButtons.forEach(button => setupModalOpen(button, overlay!));
   closeModalButtons.forEach(button => setupModalClose(button, overlay!));
+}
+
+export function setupTaskBtns() {
+  const tasks = document.querySelector<HTMLDivElement>("#tasks");
+  const overlay = document.querySelector<HTMLDivElement>("#overlay");
+
+  if (!tasks || !overlay) {
+    throw new Error("Login form has not loaded yet");
+  }
+
+  tasks.addEventListener("mouseup", (event) => {
+    try {
+      const eventTarget = event.target as HTMLElement;
+      const button = eventTarget.closest<HTMLButtonElement>("[data-modal-target]");
+
+      if (!button) return;
+
+      const modal = document.querySelector<HTMLDivElement>(button.dataset.modalTarget!);
+
+      if (!modal) {
+        throw new Error("No modal target found");
+      }
+
+      openModal(modal, overlay)
+    }
+    catch (e) {
+      console.error(e);
+    }
+  });
 }
