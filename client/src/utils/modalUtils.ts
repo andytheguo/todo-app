@@ -6,6 +6,13 @@ function openModal(modal: HTMLDivElement, overlay: HTMLDivElement) {
 
 function closeModal(modal: HTMLDivElement, overlay: HTMLDivElement) {
   if (!modal) return;
+
+  const form = modal.querySelector<HTMLFormElement>(".modal-body");
+  if (form) form.reset();
+
+  const err = modal.querySelector<HTMLParagraphElement>(".error");
+  if (err) err.classList.remove("active");
+
   modal.classList.remove("active");
   overlay.classList.remove("active");
 }
@@ -15,7 +22,7 @@ function setupModalOpen(button: HTMLButtonElement, overlay: HTMLDivElement) {
     const modal = document.querySelector<HTMLDivElement>(button.dataset.modalTarget!);
 
     if (!modal) {
-      throw new Error("Open modal button is missing a target");
+      throw new Error("Open modal button is missing a modal target");
     }
 
     openModal(modal, overlay);

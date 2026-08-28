@@ -59,6 +59,10 @@ router.patch("/user/tasks/:taskId", authenticateToken, async (req, res) => {
   const { taskId } = req.params;
   const { title, description, complete } = req.body;
 
+  if (title === "") {
+    return res.status(400).json({ error: "Title cannot be empty" });
+  }
+
   if (!req.userId) {
     return res.status(401).json({ error: "Unauthenticated" });
   }

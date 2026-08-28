@@ -6,6 +6,4 @@ import { changeState } from "./utils/stateManager";
 
 // TODO:
 // Handle errors better - don't just print them out to console
-// Fix bug where edit modal doesnt open on newly created tasks
-// Fix bug where edit modal allows empty title
 changeState("register");

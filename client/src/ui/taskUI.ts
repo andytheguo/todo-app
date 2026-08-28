@@ -28,24 +28,24 @@ export async function displayTasks() {
         <h1>New Task</h1>
         <button data-close-button>&times;</button>
       </div>
-      <div class="modal-body">
+      <form class="modal-body">
         <textarea class="task-title" placeholder="Title"></textarea>
         <textarea class="task-description" placeholder="Description..."></textarea>
-        <button id="create-button">Create Task</button>
+        <button type="submit" id="create-button">Create Task</button>
         <p class="error" id="create-error">
-      </div>
+      </form>
     </div>
     <div class="modal" id="edit-modal">
       <div class="modal-header">
         <h1>Edit Task</h1>
         <button data-close-button>&times;</button>
       </div>
-      <div class="modal-body">
+      <form class="modal-body">
         <textarea class="task-title"></textarea>
         <textarea class="task-description"></textarea>
-        <button id="save-button">Save</button>
+        <button type="submit" id="save-button">Save</button>
         <p class="error" id="save-error">
-      </div>
+      </form>
     </div>
     <div id="overlay"></div>
     `;

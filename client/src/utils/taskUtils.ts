@@ -50,20 +50,25 @@ async function setupTaskEdit(task: Task) {
     throw new Error("Edit modal has not loaded yet");
   }
 
+  console.log(task.title);
   editTitle.textContent = task.title;
 
   if (task.description) editDesciption.textContent = task.description;
 }
 
 function setupSaveBtn(task: Task, title: HTMLHeadElement, description: HTMLParagraphElement) {
-  const saveBtn = document.querySelector<HTMLButtonElement>("#save-button");
+  const form = document.querySelector<HTMLFormElement>("#edit-modal .modal-body");
   const err = document.querySelector<HTMLParagraphElement>("#save-error");
 
-  saveBtn!.onclick = async () => {
+  if (!form) return;
+
+  form!.onsubmit = async (event) => {
+    event.preventDefault();
+
     try {
       err!.classList.remove("active");
-      const editTitle = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-title");
-      const editDesciption = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-description");
+      const editTitle = form.querySelector<HTMLTextAreaElement>(".task-title");
+      const editDesciption = form.querySelector<HTMLTextAreaElement>(".task-description");
       await patchTask(task, editTitle!.value, editDesciption!.value);
 
       task.title = editTitle!.value;
@@ -121,7 +126,7 @@ export function createTaskDiv(task: Task) {
   editBtn.textContent = "EDIT";
   editBtn.id = "edit-btn";
   editBtn.dataset.modalTarget = "#edit-modal";
-  editBtn.addEventListener("mouseup", () => {
+  editBtn.addEventListener("click", () => {
     setupTaskEdit(task)
     setupSaveBtn(task, title, description);
   });
@@ -181,14 +186,18 @@ async function createTask(title: string, description?: string) {
 }
 
 function setupCreateBtn() {
-  const createButton = document.querySelector<HTMLButtonElement>("#create-button");
+  const form = document.querySelector("#task-modal .modal-body");
   const err = document.querySelector<HTMLParagraphElement>("#create-error");
 
-  createButton!.addEventListener("mouseup", async () => {
+  if (!form) return;
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
     try {
       err!.classList.remove("active");
-      const title = document.querySelector<HTMLTextAreaElement>("#task-modal .task-title");
-      const description = document.querySelector<HTMLTextAreaElement>("#task-modal .task-description");
+      const title = form.querySelector<HTMLTextAreaElement>(".task-title");
+      const description = form.querySelector<HTMLTextAreaElement>(".task-description");
       const task = await createTask(title!.value, description!.value);
 
       createTaskDiv({ id: task.id, title: task.title, description: task.description } as Task);
