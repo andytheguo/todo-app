@@ -1,0 +1,35 @@
+#tasks {
+    display: flex;
+    column-gap: 30px;
+}
+
+.task-list {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    row-gap: 10px;
+    background: whitesmoke;
+    height: 90vh;
+    padding-left: 15px;
+    border-radius: 10px;
+}
+
+#incomplete-tasks, #complete-tasks {
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+    overflow-y: auto;
+}
+
+#taskboard-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    column-gap: 20px;
+}
+
+#add-button {
+    height: 30px;
+    width: 100px;
+    font-size: 15px;
+}

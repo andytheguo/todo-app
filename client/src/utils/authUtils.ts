@@ -81,7 +81,7 @@ function onLogin() {
 
     try {
       await login();
-      changeState("tasks");
+      changeState("dashboard");
     }
     catch (e) {
       err.textContent = (e as Error).message;
@@ -104,7 +104,7 @@ function onRegister() {
 
     try {
       await register();
-      changeState("login");
+      changeState("dashboard");
     }
     catch (e) {
       console.error(e);

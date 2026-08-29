@@ -85,34 +85,56 @@ function setupSaveBtn(task: Task, title: HTMLHeadElement, description: HTMLParag
   }
 }
 
-export function createTaskDiv(task: Task) {
-  const incompleteDiv = document.querySelector<HTMLDivElement>("#incomplete-tasks");
-  const completeDiv = document.querySelector<HTMLDivElement>("#complete-tasks");
-
-  const taskDiv = document.createElement("div");
-  taskDiv.classList = "task";
-
-  const check = document.createElement("input");
+function setupCheckBox(check: HTMLInputElement, task: Task, taskDiv: HTMLDivElement, incompleteDiv: HTMLDivElement, completeDiv: HTMLDivElement) {
   check.type = "checkbox";
-  check.checked = task.complete;
   check.addEventListener("change", async () => {
-    // TODO: Potential bug?
     await updateTask(task, check.checked);
 
     const dest = check.checked ? completeDiv : incompleteDiv;
-    dest!.appendChild(taskDiv);
+    dest.appendChild(taskDiv);
   });
+}
+
+function setupDelBtn(delBtn: HTMLButtonElement, task: Task, taskDiv: HTMLDivElement) {
+  delBtn.textContent = "DELETE";
+  delBtn.id = "delete-btn";
+  delBtn.addEventListener("mouseup", async () => {
+    await setupTaskDelete(task);
+    taskDiv.remove();
+  });
+}
+
+function setupEditBtn(editBtn: HTMLButtonElement, task: Task, title: HTMLHeadElement, description: HTMLParagraphElement) {
+  editBtn.textContent = "EDIT";
+  editBtn.id = "edit-btn";
+  editBtn.dataset.modalTarget = "#edit-modal";
+  editBtn.addEventListener("click", () => {
+    setupTaskEdit(task)
+    setupSaveBtn(task, title, description);
+  });
+}
+
+export function createTaskElement(task: Task) {
+  const incompleteDiv = document.querySelector<HTMLDivElement>("#incomplete-tasks");
+  const completeDiv = document.querySelector<HTMLDivElement>("#complete-tasks");
+
+  if (!incompleteDiv || !completeDiv) {
+    throw new Error("Dashboard not loaded yet");
+  }
+
+  const taskDiv = document.createElement("div");
+  taskDiv.classList = "task";
+  taskDiv.dataset.taskId = String(task.id);
+
+  const check = document.createElement("input");
+  check.checked = task.complete;
+  setupCheckBox(check, task, taskDiv, incompleteDiv, completeDiv);
 
   const buttonDiv = document.createElement("div");
   buttonDiv.id = "task-buttons";
 
   const delBtn = document.createElement("button");
-  delBtn.textContent = "DELETE";
-  delBtn.id = "delete-btn";
-  delBtn.addEventListener("mouseup", async () => {
-    await setupTaskDelete(task)
-    taskDiv.remove();
-  });
+  setupDelBtn(delBtn, task, taskDiv);
 
   const bodyDiv = document.createElement("div");
   bodyDiv.id = "task-body";
@@ -123,13 +145,7 @@ export function createTaskDiv(task: Task) {
   const description = document.createElement("p");
 
   const editBtn = document.createElement("button");
-  editBtn.textContent = "EDIT";
-  editBtn.id = "edit-btn";
-  editBtn.dataset.modalTarget = "#edit-modal";
-  editBtn.addEventListener("click", () => {
-    setupTaskEdit(task)
-    setupSaveBtn(task, title, description);
-  });
+  setupEditBtn(editBtn, task, title, description);
 
   buttonDiv.append(delBtn, editBtn);
 
@@ -200,7 +216,7 @@ function setupCreateBtn() {
       const description = form.querySelector<HTMLTextAreaElement>(".task-description");
       const task = await createTask(title!.value, description!.value);
 
-      createTaskDiv({ id: task.id, title: task.title, description: task.description } as Task);
+      createTaskElement({ id: task.id, title: task.title, description: task.description } as Task);
     }
     catch (e) {
       err!.textContent = (e as Error).message;
@@ -240,9 +256,6 @@ export async function getTasks() {
   if (!res.ok) {
     throw new Error(data.error);
   }
-
-  // TODO: remove this
-  console.log(data);
 
   return data;
 }

@@ -1,4 +1,4 @@
-import { getTasks, createTaskDiv } from "../utils/taskUtils";
+import { getTasks, createTaskElement } from "../utils/taskUtils";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
@@ -6,11 +6,11 @@ export async function displayTasks() {
   if (!app) return;
 
   app.innerHTML = `
-    <div class="dashboard">
-      <div id="tasks-header">
+    <div id="taskboard">
+      <div id="taskboard-header">
         <h1>Tasks</h1>
         <button data-modal-target="#task-modal" id="add-button">Add Task</button>
-        <button id="sign-out">Sign out</button>
+        <button class="sign-out">Sign out</button>
       </div>
       <div id="tasks">
         <div class="task-list">
@@ -53,6 +53,6 @@ export async function displayTasks() {
   const tasks = await getTasks();
 
   for (const task of tasks) {
-    createTaskDiv(task);
+    createTaskElement(task);
   }
 }

@@ -33,3 +33,10 @@ form button {
     align-items: center;
     row-gap: 10px;
 }
+
+.sign-out {
+    height: 30px;
+    width: 100px;
+    font-size: 15px;
+    margin-left: 80%;
+}
