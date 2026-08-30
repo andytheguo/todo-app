@@ -6,7 +6,8 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = Router();
 
-router.post("/user/tasks", authenticateToken, async (req, res) => {
+router.post("/projects/:projectId/tasks", authenticateToken, async (req, res) => {
+  const { projectId } = req.params;
   const { title, description } = req.body;
 
   if (!req.userId) {
@@ -18,13 +19,24 @@ router.post("/user/tasks", authenticateToken, async (req, res) => {
   }
 
   try {
+    const project = await prisma.project.findUnique({
+      where: {
+        id: Number(projectId),
+        userId: req.userId
+      }
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
     const task = await prisma.task.create({
       data: {
         title: title,
         description: description,
-        user: {
+        project: {
           connect: {
-            id: req.userId
+            id: project.id
           }
         }
       }
@@ -41,21 +53,37 @@ router.post("/user/tasks", authenticateToken, async (req, res) => {
   }
 });
 
-router.get("/user/tasks", authenticateToken, async (req, res) => {
+router.get("/projects/:projectId/tasks", authenticateToken, async (req, res) => {
+  const { projectId } = req.params;
+
   if (!req.userId) {
     return res.status(401).json({ error: "Unauthenticated" });
   }
 
-  const tasks = await prisma.task.findMany({
+  const project = await prisma.project.findUnique({
     where: {
+      id: Number(projectId),
       userId: req.userId
     }
-  })
+  });
+
+  if (!project) {
+    return res.status(404).json({ error: "Project not found" });
+  }
+
+  const tasks = await prisma.task.findMany({
+    where: {
+      projectId: project.id,
+      project: {
+        userId: req.userId
+      }
+    }
+  });
 
   res.status(200).json(tasks);
 });
 
-router.patch("/user/tasks/:taskId", authenticateToken, async (req, res) => {
+router.patch("/tasks/:taskId", authenticateToken, async (req, res) => {
   const { taskId } = req.params;
   const { title, description, complete } = req.body;
 
@@ -71,7 +99,9 @@ router.patch("/user/tasks/:taskId", authenticateToken, async (req, res) => {
     const task = await prisma.task.update({
       where: {
         id: Number(taskId),
-        userId: req.userId
+        project: {
+          userId: req.userId
+        }
       },
       data: {
         title: title,
@@ -87,7 +117,7 @@ router.patch("/user/tasks/:taskId", authenticateToken, async (req, res) => {
   }
 });
 
-router.delete("/user/tasks/:taskId", authenticateToken, async (req, res) => {
+router.delete("tasks/:taskId", authenticateToken, async (req, res) => {
   const { taskId } = req.params;
 
   if (!req.userId) {
@@ -98,7 +128,9 @@ router.delete("/user/tasks/:taskId", authenticateToken, async (req, res) => {
     await prisma.task.delete({
       where: {
         id: Number(taskId),
-        userId: req.userId
+        project: {
+          userId: req.userId
+        }
       }
     });
 
