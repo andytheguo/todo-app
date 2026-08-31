@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import { prisma } from '../lib/prisma.js';
-import jwt from 'jsonwebtoken';
-import { genAccessToken } from '../lib/jwtUtils.js';
+import { Router } from "express";
+import { prisma } from "../lib/prisma.js";
+import jwt from "jsonwebtoken";
+import { genAccessToken } from "../lib/jwtUtils.js";
 
 const router = Router();
 

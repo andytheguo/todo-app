@@ -1,8 +1,8 @@
-import { Router } from 'express';
-import { prisma } from '../lib/prisma.js';
-import { Prisma } from '../../generated/prisma/client.js';
+import { Router } from "express";
+import { prisma } from "../lib/prisma.js";
+import { Prisma } from "../../generated/prisma/client.js";
 
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -60,27 +60,36 @@ router.get("/projects/:projectId/tasks", authenticateToken, async (req, res) => 
     return res.status(401).json({ error: "Unauthenticated" });
   }
 
-  const project = await prisma.project.findUnique({
-    where: {
-      id: Number(projectId),
-      userId: req.userId
-    }
-  });
-
-  if (!project) {
-    return res.status(404).json({ error: "Project not found" });
-  }
-
-  const tasks = await prisma.task.findMany({
-    where: {
-      projectId: project.id,
-      project: {
+  try {
+    const project = await prisma.project.findUnique({
+      where: {
+        id: Number(projectId),
         userId: req.userId
       }
-    }
-  });
+    });
 
-  res.status(200).json(tasks);
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        projectId: project.id,
+        project: {
+          userId: req.userId
+        }
+      }
+    });
+
+    res.status(200).json(tasks);
+  }
+  catch (e) {
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      return res.status(400).json({ error: "Missing or incorrect field" });
+    }
+
+    res.sendStatus(500);
+  }
 });
 
 router.patch("/tasks/:taskId", authenticateToken, async (req, res) => {

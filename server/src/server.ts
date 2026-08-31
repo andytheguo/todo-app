@@ -1,13 +1,14 @@
 import "dotenv/config";
-import express from 'express';
-import { prisma } from './lib/prisma.js';
-import cors from 'cors';
+import express from "express";
+import { prisma } from "./lib/prisma.js";
+import cors from "cors";
 
 import { setupTokenCleanup } from "./jobs/cleanupTokens.js";
 
-import userRoutes from './routes/userRoutes.js';
-import taskRoutes from './routes/taskRoutes.js';
-import authRoutes from './routes/authRoutes.js';
+import userRoutes from "./routes/userRoutes.js";
+import taskRoutes from "./routes/taskRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import projectRoutes from "./routes/projectRoutes.js"
 
 const app = express();
 const port = 3000;
@@ -33,6 +34,12 @@ app.get("/test-tasks", async (req, res) => {
   res.json(tasks);
 });
 
+app.get("/test-projects", async (req, res) => {
+  const projects = await prisma.project.findMany();
+
+  res.json(projects);
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
@@ -40,5 +47,6 @@ app.listen(port, () => {
 app.use(userRoutes);
 app.use(taskRoutes);
 app.use(authRoutes);
+app.use(projectRoutes);
 
 setupTokenCleanup();

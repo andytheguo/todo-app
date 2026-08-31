@@ -1,8 +1,8 @@
-import { Router } from 'express';
-import { prisma } from '../lib/prisma.js';
+import { Router } from "express";
+import { prisma } from "../lib/prisma.js";
 import { Prisma } from "../../generated/prisma/client.js";
-import argon2 from 'argon2';
-import { genAccessToken, genRefreshToken } from '../lib/jwtUtils.js';
+import argon2 from "argon2";
+import { genAccessToken, genRefreshToken } from "../lib/jwtUtils.js";
 
 const router = Router();
 

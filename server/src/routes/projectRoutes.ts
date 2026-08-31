@@ -1,8 +1,8 @@
-import { Router } from 'express';
-import { prisma } from '../lib/prisma.js';
-import { Prisma } from '../../generated/prisma/client.js';
+import { Router } from "express";
+import { prisma } from "../lib/prisma.js";
+import { Prisma } from "../../generated/prisma/client.js";
 
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -41,31 +41,19 @@ router.post("/projects", authenticateToken, async (req, res) => {
   }
 });
 
-router.get("/projects/", authenticateToken, async (req, res) => {
-  const { name, description } = req.body;
-
+router.get("/projects", authenticateToken, async (req, res) => {
   if (!req.userId) {
     return res.status(401).json({ error: "Unauthenticated" });
   }
 
-  if (name === "") {
-    return res.status(400).json({ error: "Name cannot be empty" });
-  }
-
   try {
-    const project = await prisma.project.create({
-      data: {
-        name: name,
-        description: description,
-        user: {
-          connect: {
-            id: req.userId
-          }
-        }
+    const project = await prisma.project.findMany({
+      where: {
+        userId: req.userId
       }
     });
 
-    res.status(201).json(project);
+    res.status(200).json(project);
   }
   catch (e) {
     if (e instanceof Prisma.PrismaClientValidationError) {
@@ -115,7 +103,7 @@ router.delete("/projects/:projectId", authenticateToken, async (req, res) => {
   }
 
   try {
-    await prisma.project.delete({
+    const project = await prisma.project.delete({
       where: {
         id: Number(projectId),
         userId: req.userId
