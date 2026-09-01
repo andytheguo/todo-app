@@ -103,7 +103,7 @@ router.delete("/projects/:projectId", authenticateToken, async (req, res) => {
   }
 
   try {
-    const project = await prisma.project.delete({
+    await prisma.project.delete({
       where: {
         id: Number(projectId),
         userId: req.userId

@@ -1,7 +1,30 @@
 #projects {
     display: flex;
+    flex-direction: column;
+    row-gap: 10px;
     height: 90vh;
+    padding-left: 15px;
+    border-radius: 10px;
     background: whitesmoke;
+    overflow-y: auto;
+    padding-top: 20px;
+}
+
+.project {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: lightgray;
+    width: 80%;
+    border-radius: 10px;
+    min-height: 125px;
+    max-width: 500px;
+    white-space: pre-wrap;
+    flex-shrink: 0;
+}
+
+#project-body {
+    padding-left: 15px;
 }
 
 #dashboard-header {

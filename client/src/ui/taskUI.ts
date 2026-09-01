@@ -2,7 +2,7 @@ import { getTasks, createTaskElement } from "../utils/taskUtils";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
-export async function displayTasks() {
+export async function displayTasks(projectId: number) {
   if (!app) return;
 
   app.innerHTML = `
@@ -50,7 +50,7 @@ export async function displayTasks() {
     <div id="overlay"></div>
     `;
 
-  const tasks = await getTasks();
+  const tasks = await getTasks(projectId);
 
   for (const task of tasks) {
     createTaskElement(task);

@@ -6,7 +6,7 @@ import { authFetch } from "./authUtils";
 
 async function updateTask(task: Task, complete: boolean) {
   try {
-    const res = await authFetch(`http://localhost:3000/user/tasks/${task.id}`, {
+    const res = await authFetch(`http://localhost:3000/projects/${task.projectId}/tasks/${task.id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -30,7 +30,7 @@ async function updateTask(task: Task, complete: boolean) {
 
 async function setupTaskDelete(task: Task) {
   try {
-    const res = await authFetch(`http://localhost:3000/user/tasks/${task.id}`, { method: "DELETE" });
+    const res = await authFetch(`http://localhost:3000/projects/${task.projectId}/tasks/${task.id}`, { method: "DELETE" });
 
     if (!res.ok) {
       const data = await res.json();
@@ -119,12 +119,11 @@ export function createTaskElement(task: Task) {
   const completeDiv = document.querySelector<HTMLDivElement>("#complete-tasks");
 
   if (!incompleteDiv || !completeDiv) {
-    throw new Error("Dashboard not loaded yet");
+    throw new Error("Taskboard has not loaded yet");
   }
 
   const taskDiv = document.createElement("div");
   taskDiv.classList = "task";
-  taskDiv.dataset.taskId = String(task.id);
 
   const check = document.createElement("input");
   check.checked = task.complete;
@@ -159,11 +158,11 @@ export function createTaskElement(task: Task) {
     taskDiv.append(bodyDiv, buttonDiv);
   }
 
-  (task.complete ? completeDiv! : incompleteDiv!).appendChild(taskDiv);
+  (task.complete ? completeDiv : incompleteDiv).appendChild(taskDiv);
 }
 
 async function patchTask(task: Task, title: string, description?: string) {
-  const res = await authFetch(`http://localhost:3000/user/tasks/${task.id}`, {
+  const res = await authFetch(`http://localhost:3000/projects/${task.projectId}/tasks/${task.id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -180,8 +179,8 @@ async function patchTask(task: Task, title: string, description?: string) {
   }
 }
 
-async function createTask(title: string, description?: string) {
-  const res = await authFetch("http://localhost:3000/user/tasks", {
+async function createTask(projectId: number, title: string, description?: string) {
+  const res = await authFetch(`http://localhost:3000/projects/${projectId}/tasks`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -201,7 +200,7 @@ async function createTask(title: string, description?: string) {
   return data;
 }
 
-function setupCreateBtn() {
+function setupCreateBtn(projectId: number) {
   const form = document.querySelector("#task-modal .modal-body");
   const err = document.querySelector<HTMLParagraphElement>("#create-error");
 
@@ -214,7 +213,7 @@ function setupCreateBtn() {
       err!.classList.remove("active");
       const title = form.querySelector<HTMLTextAreaElement>(".task-title");
       const description = form.querySelector<HTMLTextAreaElement>(".task-description");
-      const task = await createTask(title!.value, description!.value);
+      const task = await createTask(projectId, title!.value, description!.value);
 
       createTaskElement({ id: task.id, title: task.title, description: task.description } as Task);
     }
@@ -228,7 +227,7 @@ function setupCreateBtn() {
 
 function setupSignOutBtn() {
   const refreshToken = localStorage.getItem("refreshToken");
-  const signOutBtn = document.querySelector<HTMLButtonElement>("#sign-out");
+  const signOutBtn = document.querySelector<HTMLButtonElement>(".sign-out");
 
   signOutBtn!.addEventListener("mouseup", async () => {
     try {
@@ -249,8 +248,8 @@ function setupSignOutBtn() {
   });
 }
 
-export async function getTasks() {
-  const res = await authFetch("http://localhost:3000/user/tasks", { method: "GET" });
+export async function getTasks(projectId: number) {
+  const res = await authFetch(`http://localhost:3000/projects/${projectId}/tasks`, { method: "GET" });
   const data = await res.json();
 
   if (!res.ok) {
@@ -260,10 +259,10 @@ export async function getTasks() {
   return data;
 }
 
-export async function setupTasks() {
+export async function setupTasks(projectId: number) {
   try {
-    await displayTasks();
-    setupCreateBtn()
+    await displayTasks(projectId);
+    setupCreateBtn(projectId);
     setupSignOutBtn();
     setupModals();
     setupTaskBtns();
