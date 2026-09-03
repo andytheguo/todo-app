@@ -13,7 +13,7 @@ export async function displayTasks(projectId: number) {
         <button class="sign-out">Sign out</button>
         <button class="home-btn">Home</button>
       </div>
-      <div id="tasks">
+      <div id="tasks" class="action">
         <div class="task-list">
           <h2>In Progress</h2>
           <div id="incomplete-tasks"></div>
@@ -30,8 +30,8 @@ export async function displayTasks(projectId: number) {
         <button data-close-button>&times;</button>
       </div>
       <form class="modal-body">
-        <textarea class="task-title" placeholder="Title"></textarea>
-        <textarea class="task-description" placeholder="Description..."></textarea>
+        <textarea class="modal-title" placeholder="Title"></textarea>
+        <textarea class="modal-description" placeholder="Description..."></textarea>
         <button type="submit" id="create-button">Create Task</button>
         <p class="error" id="create-error">
       </form>
@@ -42,8 +42,8 @@ export async function displayTasks(projectId: number) {
         <button data-close-button>&times;</button>
       </div>
       <form class="modal-body">
-        <textarea class="task-title"></textarea>
-        <textarea class="task-description"></textarea>
+        <textarea class="modal-title"></textarea>
+        <textarea class="modal-description"></textarea>
         <button type="submit" id="save-button">Save</button>
         <p class="error" id="save-error">
       </form>

@@ -126,7 +126,7 @@ router.patch("/tasks/:taskId", authenticateToken, async (req, res) => {
   }
 });
 
-router.delete("tasks/:taskId", authenticateToken, async (req, res) => {
+router.delete("/tasks/:taskId", authenticateToken, async (req, res) => {
   const { taskId } = req.params;
 
   if (!req.userId) {

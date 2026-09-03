@@ -1,7 +1,7 @@
 import type { Task } from "../types";
 import { changeState } from "./stateManager";
 import { displayTasks } from "../ui/taskUI";
-import { setupModals, setupTaskBtns } from "./modalUtils";
+import { setupModals, setupActionBtns } from "./modalUtils";
 import { authFetch, setupSignOutBtn } from "./authUtils";
 
 async function updateTask(task: Task, complete: boolean) {
@@ -30,7 +30,7 @@ async function updateTask(task: Task, complete: boolean) {
 
 async function setupTaskDelete(task: Task) {
   try {
-    const res = await authFetch(`http://localhost:3000/projects/tasks/${task.id}`, { method: "DELETE" });
+    const res = await authFetch(`http://localhost:3000/tasks/${task.id}`, { method: "DELETE" });
 
     if (!res.ok) {
       const data = await res.json();
@@ -43,20 +43,19 @@ async function setupTaskDelete(task: Task) {
 }
 
 async function setupTaskEdit(task: Task) {
-  const editTitle = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-title");
-  const editDesciption = document.querySelector<HTMLTextAreaElement>("#edit-modal .task-description");
+  const editTitle = document.querySelector<HTMLTextAreaElement>("#edit-modal .modal-title");
+  const editDesciption = document.querySelector<HTMLTextAreaElement>("#edit-modal .modal-description");
 
   if (!editTitle || !editDesciption) {
     throw new Error("Edit modal has not loaded yet");
   }
 
-  console.log(task.title);
   editTitle.textContent = task.title;
 
   if (task.description) editDesciption.textContent = task.description;
 }
 
-function setupSaveBtn(task: Task, title: HTMLHeadElement, description: HTMLParagraphElement) {
+function setupTaskSaveBtn(task: Task, title: HTMLHeadElement, description: HTMLParagraphElement) {
   const form = document.querySelector<HTMLFormElement>("#edit-modal .modal-body");
   const err = document.querySelector<HTMLParagraphElement>("#save-error");
 
@@ -67,8 +66,8 @@ function setupSaveBtn(task: Task, title: HTMLHeadElement, description: HTMLParag
 
     try {
       err!.classList.remove("active");
-      const editTitle = form.querySelector<HTMLTextAreaElement>(".task-title");
-      const editDesciption = form.querySelector<HTMLTextAreaElement>(".task-description");
+      const editTitle = form.querySelector<HTMLTextAreaElement>(".modal-title");
+      const editDesciption = form.querySelector<HTMLTextAreaElement>(".modal-description");
       await patchTask(task, editTitle!.value, editDesciption!.value);
 
       task.title = editTitle!.value;
@@ -95,22 +94,20 @@ function setupCheckBox(check: HTMLInputElement, task: Task, taskDiv: HTMLDivElem
   });
 }
 
-function setupDelBtn(delBtn: HTMLButtonElement, task: Task, taskDiv: HTMLDivElement) {
+function setupTaskDelBtn(delBtn: HTMLButtonElement, task: Task, taskDiv: HTMLDivElement) {
   delBtn.textContent = "DELETE";
-  delBtn.id = "delete-btn";
+  delBtn.classList = "delete-btn";
   delBtn.addEventListener("mouseup", async () => {
     await setupTaskDelete(task);
     taskDiv.remove();
   });
 }
 
-function setupEditBtn(editBtn: HTMLButtonElement, task: Task, title: HTMLHeadElement, description: HTMLParagraphElement) {
-  editBtn.textContent = "EDIT";
-  editBtn.id = "edit-btn";
+function setupTaskEditBtn(editBtn: HTMLButtonElement, task: Task, title: HTMLHeadElement, description: HTMLParagraphElement) {
   editBtn.dataset.modalTarget = "#edit-modal";
-  editBtn.addEventListener("click", () => {
+  editBtn.addEventListener("mouseup", () => {
     setupTaskEdit(task)
-    setupSaveBtn(task, title, description);
+    setupTaskSaveBtn(task, title, description);
   });
 }
 
@@ -130,10 +127,10 @@ export function createTaskElement(task: Task) {
   setupCheckBox(check, task, taskDiv, incompleteDiv, completeDiv);
 
   const buttonDiv = document.createElement("div");
-  buttonDiv.id = "task-buttons";
+  buttonDiv.classList = "action-buttons";
 
   const delBtn = document.createElement("button");
-  setupDelBtn(delBtn, task, taskDiv);
+  setupTaskDelBtn(delBtn, task, taskDiv);
 
   const bodyDiv = document.createElement("div");
   bodyDiv.id = "task-body";
@@ -144,19 +141,21 @@ export function createTaskElement(task: Task) {
   const description = document.createElement("p");
 
   const editBtn = document.createElement("button");
-  setupEditBtn(editBtn, task, title, description);
+  editBtn.textContent = "EDIT";
+  editBtn.classList = "edit-btn";
+  setupTaskEditBtn(editBtn, task, title, description);
 
   buttonDiv.append(delBtn, editBtn);
 
   if (task.description) {
     description.textContent = task.description;
     bodyDiv.append(title, description, check);
-    taskDiv.append(bodyDiv, buttonDiv);
   }
   else {
     bodyDiv.append(title, check);
-    taskDiv.append(bodyDiv, buttonDiv);
   }
+
+  taskDiv.append(bodyDiv, buttonDiv);
 
   (task.complete ? completeDiv : incompleteDiv).appendChild(taskDiv);
 }
@@ -200,7 +199,7 @@ async function createTask(projectId: number, title: string, description?: string
   return data;
 }
 
-function setupCreateBtn(projectId: number) {
+function setupCreateTaskBtn(projectId: number) {
   const form = document.querySelector("#task-modal .modal-body");
   const err = document.querySelector<HTMLParagraphElement>("#create-error");
 
@@ -211,8 +210,8 @@ function setupCreateBtn(projectId: number) {
 
     try {
       err!.classList.remove("active");
-      const title = form.querySelector<HTMLTextAreaElement>(".task-title");
-      const description = form.querySelector<HTMLTextAreaElement>(".task-description");
+      const title = form.querySelector<HTMLTextAreaElement>(".modal-title");
+      const description = form.querySelector<HTMLTextAreaElement>(".modal-description");
       const task = await createTask(projectId, title!.value, description!.value);
 
       createTaskElement({ id: task.id, title: task.title, description: task.description } as Task);
@@ -244,11 +243,11 @@ export async function getTasks(projectId: number) {
 export async function setupTasks(projectId: number) {
   try {
     await displayTasks(projectId);
-    setupCreateBtn(projectId);
+    setupCreateTaskBtn(projectId);
     setupSignOutBtn();
     setupHomeBtn();
     setupModals();
-    setupTaskBtns();
+    setupActionBtns();
   }
   catch (e) {
     console.error(e);

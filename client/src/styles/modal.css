@@ -58,12 +58,12 @@
     pointer-events: all;
 }
 
-.task-title {
+.modal-title {
     height: 30px;
     width: 300px;
 }
 
-.task-description {
+.modal-description {
     height: 300px;
     width: 500px;
 }

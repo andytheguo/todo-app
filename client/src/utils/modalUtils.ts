@@ -54,15 +54,16 @@ export function setupModals() {
   closeModalButtons.forEach(button => setupModalClose(button, overlay!));
 }
 
-export function setupTaskBtns() {
-  const tasks = document.querySelector<HTMLDivElement>("#tasks");
+export function setupActionBtns() {
+  const action = document.querySelector<HTMLDivElement>(".action");
   const overlay = document.querySelector<HTMLDivElement>("#overlay");
 
-  if (!tasks || !overlay) {
-    throw new Error("Login form has not loaded yet");
+  if (!action || !overlay) {
+    throw new Error("Board has not loaded yet");
   }
 
-  tasks.addEventListener("mouseup", (event) => {
+  action.addEventListener("mouseup", (event) => {
+    console.log("projects clicked");
     try {
       const eventTarget = event.target as HTMLElement;
       const button = eventTarget.closest<HTMLButtonElement>("[data-modal-target]");
