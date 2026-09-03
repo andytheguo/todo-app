@@ -137,6 +137,32 @@ export function setupLogin() {
   }
 }
 
+export function setupSignOutBtn() {
+  const refreshToken = localStorage.getItem("refreshToken");
+  const signOutBtn = document.querySelector<HTMLButtonElement>(".sign-out");
+
+  signOutBtn!.addEventListener("mouseup", async () => {
+    try {
+      await authFetch("http://localhost:3000/logout", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          refreshToken: refreshToken
+        })
+      });
+
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("accessToken");
+      changeState("register");
+    }
+    catch (e) {
+      console.error(e);
+    }
+  });
+}
+
 async function refreshToken() {
   const refreshToken = localStorage.getItem("refreshToken");
 

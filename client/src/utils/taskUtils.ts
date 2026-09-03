@@ -2,11 +2,11 @@ import type { Task } from "../types";
 import { changeState } from "./stateManager";
 import { displayTasks } from "../ui/taskUI";
 import { setupModals, setupTaskBtns } from "./modalUtils";
-import { authFetch } from "./authUtils";
+import { authFetch, setupSignOutBtn } from "./authUtils";
 
 async function updateTask(task: Task, complete: boolean) {
   try {
-    const res = await authFetch(`http://localhost:3000/projects/${task.projectId}/tasks/${task.id}`, {
+    const res = await authFetch(`http://localhost:3000/tasks/${task.id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -30,7 +30,7 @@ async function updateTask(task: Task, complete: boolean) {
 
 async function setupTaskDelete(task: Task) {
   try {
-    const res = await authFetch(`http://localhost:3000/projects/${task.projectId}/tasks/${task.id}`, { method: "DELETE" });
+    const res = await authFetch(`http://localhost:3000/projects/tasks/${task.id}`, { method: "DELETE" });
 
     if (!res.ok) {
       const data = await res.json();
@@ -162,7 +162,7 @@ export function createTaskElement(task: Task) {
 }
 
 async function patchTask(task: Task, title: string, description?: string) {
-  const res = await authFetch(`http://localhost:3000/projects/${task.projectId}/tasks/${task.id}`, {
+  const res = await authFetch(`http://localhost:3000/tasks/${task.id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -225,27 +225,9 @@ function setupCreateBtn(projectId: number) {
   });
 }
 
-function setupSignOutBtn() {
-  const refreshToken = localStorage.getItem("refreshToken");
-  const signOutBtn = document.querySelector<HTMLButtonElement>(".sign-out");
-
-  signOutBtn!.addEventListener("mouseup", async () => {
-    try {
-      await authFetch("http://localhost:3000/logout", {
-        method: "DELETE",
-        body: JSON.stringify({
-          rerfeshToken: refreshToken
-        })
-      });
-
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("accessToken");
-      changeState("register");
-    }
-    catch (e) {
-      console.error(e);
-    }
-  });
+function setupHomeBtn() {
+  const homeBtn = document.querySelector<HTMLButtonElement>(".home-btn");
+  homeBtn!.addEventListener("mouseup", () => changeState("dashboard"));
 }
 
 export async function getTasks(projectId: number) {
@@ -264,6 +246,7 @@ export async function setupTasks(projectId: number) {
     await displayTasks(projectId);
     setupCreateBtn(projectId);
     setupSignOutBtn();
+    setupHomeBtn();
     setupModals();
     setupTaskBtns();
   }

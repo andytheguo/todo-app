@@ -11,6 +11,7 @@ export async function displayTasks(projectId: number) {
         <h1>Tasks</h1>
         <button data-modal-target="#task-modal" id="add-button">Add Task</button>
         <button class="sign-out">Sign out</button>
+        <button class="home-btn">Home</button>
       </div>
       <div id="tasks">
         <div class="task-list">

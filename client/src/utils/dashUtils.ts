@@ -1,6 +1,6 @@
 import type { Project } from "../types";
 import { displayDash } from "../ui/dashUI";
-import { authFetch } from "./authUtils";
+import { authFetch, setupSignOutBtn } from "./authUtils";
 import { changeState } from "./stateManager";
 
 export async function getProjects() {
@@ -51,4 +51,5 @@ export function createProjectElement(project: Project) {
 
 export async function setupDash() {
   await displayDash();
+  setupSignOutBtn();
 }

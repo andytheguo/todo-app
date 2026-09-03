@@ -23,6 +23,15 @@
     flex-shrink: 0;
 }
 
+.project:hover {
+    scale: 1.01;
+}
+
+.project:active {
+    scale: 1.02;
+    background-color: darkgray;
+}
+
 #project-body {
     padding-left: 15px;
 }
