@@ -1,8 +1,9 @@
+import type { Project } from "../types";
 import { getTasks, createTaskElement } from "../utils/taskUtils";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
-export async function displayTasks(projectId: number) {
+export async function displayTasks(project: Project) {
   if (!app) return;
 
   app.innerHTML = `
@@ -10,6 +11,7 @@ export async function displayTasks(projectId: number) {
       <div id="taskboard-header">
         <h1>Tasks</h1>
         <button data-modal-target="#task-modal" id="add-button">Add Task</button>
+        <h1 id="project-name">Project: ${project.name}</h1>
         <button class="sign-out">Sign out</button>
         <button class="home-btn">Home</button>
       </div>
@@ -51,7 +53,7 @@ export async function displayTasks(projectId: number) {
     <div id="overlay"></div>
     `;
 
-  const tasks = await getTasks(projectId);
+  const tasks = await getTasks(project);
 
   for (const task of tasks) {
     createTaskElement(task);

@@ -1,8 +1,9 @@
+import type { Project } from "../types";
 import { setupLogin, setupRegister } from "./authUtils";
 import { setupDash } from "./dashUtils";
 import { setupTasks } from "./taskUtils";
 
-export function changeState(state: string, projectId?: number) {
+export function changeState(state: string, project?: Project) {
   switch (state) {
     case "register": {
       setupRegister();
@@ -17,10 +18,10 @@ export function changeState(state: string, projectId?: number) {
       break;
     }
     case "tasks": {
-      if (!projectId) {
+      if (!project) {
         throw new Error("Missing project id");
       }
-      setupTasks(projectId);
+      setupTasks(project);
       break;
     }
   }

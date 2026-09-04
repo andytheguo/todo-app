@@ -1,4 +1,4 @@
-import type { Task } from "../types";
+import type { Project, Task } from "../types";
 import { changeState } from "./stateManager";
 import { displayTasks } from "../ui/taskUI";
 import { setupModals, setupActionBtns } from "./modalUtils";
@@ -61,7 +61,7 @@ function setupTaskSaveBtn(task: Task, title: HTMLHeadElement, description: HTMLP
 
   if (!form) return;
 
-  form!.onsubmit = async (event) => {
+  form.onsubmit = async (event) => {
     event.preventDefault();
 
     try {
@@ -178,8 +178,8 @@ async function patchTask(task: Task, title: string, description?: string) {
   }
 }
 
-async function createTask(projectId: number, title: string, description?: string) {
-  const res = await authFetch(`http://localhost:3000/projects/${projectId}/tasks`, {
+async function createTask(project: Project, title: string, description?: string) {
+  const res = await authFetch(`http://localhost:3000/projects/${project.id}/tasks`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -199,8 +199,8 @@ async function createTask(projectId: number, title: string, description?: string
   return data;
 }
 
-function setupCreateTaskBtn(projectId: number) {
-  const form = document.querySelector("#task-modal .modal-body");
+function setupCreateTaskBtn(project: Project) {
+  const form = document.querySelector<HTMLFormElement>("#task-modal .modal-body");
   const err = document.querySelector<HTMLParagraphElement>("#create-error");
 
   if (!form) return;
@@ -212,9 +212,11 @@ function setupCreateTaskBtn(projectId: number) {
       err!.classList.remove("active");
       const title = form.querySelector<HTMLTextAreaElement>(".modal-title");
       const description = form.querySelector<HTMLTextAreaElement>(".modal-description");
-      const task = await createTask(projectId, title!.value, description!.value);
+      const task = await createTask(project, title!.value, description!.value);
 
       createTaskElement({ id: task.id, title: task.title, description: task.description } as Task);
+
+      form.reset();
     }
     catch (e) {
       err!.textContent = (e as Error).message;
@@ -229,8 +231,8 @@ function setupHomeBtn() {
   homeBtn!.addEventListener("mouseup", () => changeState("dashboard"));
 }
 
-export async function getTasks(projectId: number) {
-  const res = await authFetch(`http://localhost:3000/projects/${projectId}/tasks`, { method: "GET" });
+export async function getTasks(project: Project) {
+  const res = await authFetch(`http://localhost:3000/projects/${project.id}/tasks`, { method: "GET" });
   const data = await res.json();
 
   if (!res.ok) {
@@ -240,10 +242,10 @@ export async function getTasks(projectId: number) {
   return data;
 }
 
-export async function setupTasks(projectId: number) {
+export async function setupTasks(project: Project) {
   try {
-    await displayTasks(projectId);
-    setupCreateTaskBtn(projectId);
+    await displayTasks(project);
+    setupCreateTaskBtn(project);
     setupSignOutBtn();
     setupHomeBtn();
     setupModals();

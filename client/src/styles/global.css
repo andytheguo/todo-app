@@ -52,6 +52,7 @@ form button {
     display: flex;
     padding-left: 7px;
     margin-top: auto;
+    width: fit-content;
 }
 
 .action-buttons button {

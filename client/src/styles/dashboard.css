@@ -1,7 +1,9 @@
 #projects {
     display: flex;
-    flex-direction: column;
-    row-gap: 10px;
+    align-items: flex-start;
+    align-content: flex-start;
+    gap: 15px;
+    flex-wrap: wrap;
     height: 90vh;
     padding-left: 15px;
     border-radius: 10px;
@@ -15,7 +17,7 @@
     flex-direction: column;
     position: relative;
     background: lightgray;
-    width: 80%;
+    width: calc(25% - 15px);
     border-radius: 10px;
     min-height: 125px;
     max-width: 500px;

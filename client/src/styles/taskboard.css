@@ -28,6 +28,12 @@
     column-gap: 20px;
 }
 
+#project-name {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 #add-button {
     height: 30px;
     width: 100px;

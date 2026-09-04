@@ -2,6 +2,7 @@ function openModal(modal: HTMLDivElement, overlay: HTMLDivElement) {
   if (!modal) return;
   modal.classList.add("active");
   overlay.classList.add("active");
+  document.body.style.overflow = "hidden";
 }
 
 function closeModal(modal: HTMLDivElement, overlay: HTMLDivElement) {
@@ -15,6 +16,7 @@ function closeModal(modal: HTMLDivElement, overlay: HTMLDivElement) {
 
   modal.classList.remove("active");
   overlay.classList.remove("active");
+  document.body.style.overflow = "";
 }
 
 function setupModalOpen(button: HTMLButtonElement, overlay: HTMLDivElement) {
@@ -41,17 +43,29 @@ function setupModalClose(button: HTMLButtonElement, overlay: HTMLDivElement) {
   });
 }
 
+function setupOverlayClose(overlay: HTMLDivElement) {
+  overlay.addEventListener("mouseup", () => {
+    const modal = document.querySelector<HTMLDivElement>(".modal.active");
+
+    if (!modal) return;
+
+    closeModal(modal, overlay)
+  });
+}
+
 export function setupModals() {
   const openModalButtons = document.querySelectorAll<HTMLButtonElement>("[data-modal-target]");
   const closeModalButtons = document.querySelectorAll<HTMLButtonElement>("[data-close-button]");
   const overlay = document.querySelector<HTMLDivElement>("#overlay");
 
   if (!overlay) {
-    throw new Error("Login form has not loaded yet");
+    throw new Error("Page has not loaded yet");
   }
 
-  openModalButtons.forEach(button => setupModalOpen(button, overlay!));
-  closeModalButtons.forEach(button => setupModalClose(button, overlay!));
+  openModalButtons.forEach(button => setupModalOpen(button, overlay));
+  closeModalButtons.forEach(button => setupModalClose(button, overlay));
+
+  setupOverlayClose(overlay);
 }
 
 export function setupActionBtns() {
@@ -63,7 +77,6 @@ export function setupActionBtns() {
   }
 
   action.addEventListener("mouseup", (event) => {
-    console.log("projects clicked");
     try {
       const eventTarget = event.target as HTMLElement;
       const button = eventTarget.closest<HTMLButtonElement>("[data-modal-target]");

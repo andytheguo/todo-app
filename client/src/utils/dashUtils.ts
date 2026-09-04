@@ -75,7 +75,7 @@ function setupProjectSaveBtn(project: Project, name: HTMLHeadElement, descriptio
 
   if (!form) return;
 
-  form!.onsubmit = async (event) => {
+  form.onsubmit = async (event) => {
     event.preventDefault();
 
     try {
@@ -120,7 +120,7 @@ export function createProjectElement(project: Project) {
     const eventTarget = event.target as HTMLElement;
 
     if (eventTarget.closest(".action-buttons")) return;
-    changeState("tasks", project.id);
+    changeState("tasks", project);
   });
 
   const buttonDiv = document.createElement("div");
@@ -179,7 +179,7 @@ async function createProject(name: string, description: string) {
 }
 
 function setupNewProjectBtn() {
-  const form = document.querySelector("#project-modal .modal-body");
+  const form = document.querySelector<HTMLFormElement>("#project-modal .modal-body");
   const err = document.querySelector<HTMLParagraphElement>("#create-error");
 
   if (!form) return;
@@ -194,6 +194,8 @@ function setupNewProjectBtn() {
       const project = await createProject(name!.value, description!.value);
 
       createProjectElement({ id: project.id, name: project.name, description: project.description } as Project);
+
+      form.reset();
     }
     catch (e) {
       err!.textContent = (e as Error).message;
