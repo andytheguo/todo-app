@@ -47,13 +47,30 @@ router.get("/projects", authenticateToken, async (req, res) => {
   }
 
   try {
-    const project = await prisma.project.findMany({
+    const projects = await prisma.project.findMany({
       where: {
         userId: req.userId
       }
     });
 
-    res.status(200).json(project);
+    const projectWithTasks = await Promise.all(
+      projects.map(
+        async (project) => {
+          const tasks = await prisma.task.findMany({
+            where: {
+              projectId: project.id
+            }
+          });
+
+          const total = tasks.length;
+          const completed = tasks.filter(task => task.complete).length;
+
+          return { total, completed, ...project };
+        }
+      )
+    );
+
+    res.status(200).json(projectWithTasks);
   }
   catch (e) {
     if (e instanceof Prisma.PrismaClientValidationError) {

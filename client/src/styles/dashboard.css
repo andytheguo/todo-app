@@ -56,3 +56,24 @@
     width: 100px;
     font-size: 15px;
 }
+
+.progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-left: 15px;
+}
+
+.progress-container {
+    height: 15px;
+    width: 80%;
+    border-radius: 10px;
+    background: orangered;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0;
+    border-radius: 10px;
+    background-color: mediumspringgreen;
+}

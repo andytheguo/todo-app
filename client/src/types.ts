@@ -10,4 +10,6 @@ export type Project = {
   id: number,
   name: string,
   description?: string
-}
+  total: number,
+  completed: number
+};

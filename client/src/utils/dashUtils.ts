@@ -123,6 +123,27 @@ export function createProjectElement(project: Project) {
     changeState("tasks", project);
   });
 
+  // TODO: progress div
+
+  const progressDiv = document.createElement("div");
+  progressDiv.classList = "progress"
+
+  const progress = document.createElement("div");
+  progress.classList = "progress-container";
+
+  const progressPercent = project.total == 0 ? 0 : Math.round((project.completed / project.total) * 100);
+
+  const progressBar = document.createElement("div");
+  progressBar.classList = "progress-bar";
+  progressBar.style.width = `${progressPercent}%`;
+
+  const progressTxt = document.createElement("p");
+  progressTxt.textContent = progressPercent == 100 ? "DONE" : `${progressPercent}%`
+
+  progress.append(progressBar);
+
+  progressDiv.append(progress, progressTxt);
+
   const buttonDiv = document.createElement("div");
   buttonDiv.classList = "action-buttons";
 
@@ -152,7 +173,7 @@ export function createProjectElement(project: Project) {
     bodyDiv.append(name, buttonDiv);
   }
 
-  projectDiv.append(bodyDiv, buttonDiv);
+  projectDiv.append(bodyDiv, progressDiv, buttonDiv);
 
   projectsDiv.append(projectDiv);
 }
