@@ -4,9 +4,9 @@ import { displayTasks } from "../ui/taskUI";
 import { setupModals, setupActionBtns } from "./modalUtils";
 import { authFetch, setupSignOutBtn } from "./authUtils";
 
-async function updateTask(task: Task, complete: boolean) {
+async function updateTask(taskId: number, complete: boolean) {
   try {
-    const res = await authFetch(`http://localhost:3000/tasks/${task.id}`, {
+    const res = await authFetch(`http://localhost:3000/tasks/${taskId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -20,8 +20,6 @@ async function updateTask(task: Task, complete: boolean) {
       const data = await res.json();
       throw new Error(data.error);
     }
-
-    task.complete = complete;
   }
   catch (e) {
     console.error(e);
@@ -87,7 +85,8 @@ function setupTaskSaveBtn(task: Task, title: HTMLHeadElement, description: HTMLP
 function setupCheckBox(check: HTMLInputElement, task: Task, taskDiv: HTMLDivElement, incompleteDiv: HTMLDivElement, completeDiv: HTMLDivElement) {
   check.type = "checkbox";
   check.addEventListener("change", async () => {
-    await updateTask(task, check.checked);
+    await updateTask(task.id, check.checked);
+    task.complete = check.checked;
 
     const dest = check.checked ? completeDiv : incompleteDiv;
     dest.appendChild(taskDiv);
@@ -111,6 +110,63 @@ function setupTaskEditBtn(editBtn: HTMLButtonElement, task: Task, title: HTMLHea
   });
 }
 
+function setupTaskDrag() {
+  const incompleteDiv = document.querySelector<HTMLDivElement>("#incomplete-tasks");
+  const completeDiv = document.querySelector<HTMLDivElement>("#complete-tasks");
+
+  if (!incompleteDiv || !completeDiv) {
+    throw new Error("Taskboard has not loaded yet");
+  }
+
+  incompleteDiv.ondragover = (event) => {
+    event.preventDefault();
+  };
+
+  completeDiv.ondragover = (event) => {
+    event.preventDefault();
+  };
+
+  incompleteDiv.ondrop = async (event) => {
+    event.preventDefault();
+
+    try {
+      const taskDiv = document.querySelector<HTMLDivElement>(".dragging");
+      if (!taskDiv) return;
+
+      const check = taskDiv.querySelector<HTMLInputElement>("#task-body input");
+      if (!check) return;
+
+      check.checked = false;
+      await updateTask(Number(taskDiv.dataset.taskId), check.checked);
+
+      incompleteDiv.append(taskDiv);
+    }
+    catch (e) {
+      console.error(e);
+    }
+  };
+
+  completeDiv.ondrop = async (event) => {
+    event.preventDefault();
+
+    try {
+      const taskDiv = document.querySelector<HTMLDivElement>(".dragging");
+      if (!taskDiv) return;
+
+      const check = taskDiv.querySelector<HTMLInputElement>("#task-body input");
+      if (!check) return;
+
+      check.checked = true;
+      await updateTask(Number(taskDiv.dataset.taskId), check.checked);
+
+      completeDiv.append(taskDiv);
+    }
+    catch (e) {
+      console.error(e);
+    }
+  };
+}
+
 export function createTaskElement(task: Task) {
   const incompleteDiv = document.querySelector<HTMLDivElement>("#incomplete-tasks");
   const completeDiv = document.querySelector<HTMLDivElement>("#complete-tasks");
@@ -121,6 +177,16 @@ export function createTaskElement(task: Task) {
 
   const taskDiv = document.createElement("div");
   taskDiv.classList = "task";
+  taskDiv.draggable = true;
+  taskDiv.dataset.taskId = String(task.id);
+
+  taskDiv.addEventListener("dragstart", () => {
+    taskDiv.classList.add("dragging");
+  });
+
+  taskDiv.addEventListener("dragend", () => {
+    taskDiv.classList.remove("dragging");
+  });
 
   const check = document.createElement("input");
   check.checked = task.complete;
@@ -250,6 +316,7 @@ export async function setupTasks(project: Project) {
     setupHomeBtn();
     setupModals();
     setupActionBtns();
+    setupTaskDrag();
   }
   catch (e) {
     console.error(e);

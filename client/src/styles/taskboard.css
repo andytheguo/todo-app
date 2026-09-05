@@ -19,6 +19,7 @@
     flex-direction: column;
     row-gap: 10px;
     overflow-y: auto;
+    min-height: 90%;
 }
 
 #taskboard-header {
