@@ -4,10 +4,10 @@
     align-content: flex-start;
     gap: 15px;
     flex-wrap: wrap;
-    height: 90vh;
+    height: 88vh;
     padding-left: 15px;
     border-radius: 10px;
-    background: whitesmoke;
+    background: rgb(29, 29, 29);
     overflow-y: auto;
     padding-top: 20px;
 }
@@ -23,6 +23,7 @@
     max-width: 500px;
     white-space: pre-wrap;
     flex-shrink: 0;
+    background: rgb(26, 26, 26);
 }
 
 .project:hover {

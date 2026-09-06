@@ -10,7 +10,10 @@ export async function displayDash() {
       <div id="dashboard-header">
         <h1>Dashboard</h1>
         <button data-modal-target="#project-modal" id="create-project">New Project</button>
-        <button class="sign-out">Sign out</button>
+
+        <div class="right-panel">
+          <button class="sign-out">Sign out</button>
+        </div>
       </div>
       <div id="projects" class="action"></div>
     </div>

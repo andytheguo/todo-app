@@ -13,6 +13,7 @@
     height: 55vh;
     width: 70vh;
     z-index: 2;
+    background: rgb(29, 29, 29);
 }
 
 .modal.active {

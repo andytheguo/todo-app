@@ -1,3 +1,35 @@
+* {
+    font-family: Inter;
+    border: 0;
+    outline: none;
+}
+
+h1, h2, p {
+    color: white;
+}
+
+body {
+    background: rgb(26, 26, 26);
+    background-image: radial-gradient(rgb(59, 59, 59) 1px, transparent 0);
+    background-size: 40px 40px;
+}
+
+button {
+    margin-top: 5px;
+    border-radius: 20px;
+    border-color: transparent;
+    background: #a600ff;
+    background: linear-gradient(90deg,rgba(166, 0, 255, 1) 0%, rgba(145, 0, 136, 1) 100%);
+    color: white;
+}
+
+button:hover {
+    background: #ff7b00;
+    background: linear-gradient(90deg, rgba(255, 123, 0, 1) 0%, rgba(176, 53, 0, 1) 100%);
+    color: white;
+    transform: scale(1.05);
+}
+
 form input {
     height: 30px;
     width: 300px;
@@ -8,6 +40,10 @@ form input {
 form button {
     height: 30px;
     width: 150px;
+    border-radius: 10px;
+}
+
+textarea {
     border-radius: 10px;
 }
 
@@ -38,13 +74,17 @@ form button {
     height: 30px;
     width: 100px;
     font-size: 15px;
-    margin-left: 80%;
 }
 
 .home-btn {
     height: 30px;
     width: 100px;
     font-size: 15px;
+}
+
+.right-panel {
+    display: flex;
+    column-gap: 10px;
     margin-left: auto;
 }
 
@@ -63,17 +103,23 @@ form button {
 }
 
 .delete-btn {
+    background: none;
     color: red;
 }
 
 .edit-btn {
+    background: none;
     color: green;
 }
 
 .delete-btn:hover {
+    background: none;
+    transform: none;
     color: darkred;
 }
 
 .edit-btn:hover {
+    background: none;
+    transform: none;
     color: darkgreen;
 }

@@ -8,7 +8,7 @@
     flex: 1;
     flex-direction: column;
     row-gap: 10px;
-    background: whitesmoke;
+    background: rgb(29, 29, 29);
     height: 90vh;
     padding-left: 15px;
     border-radius: 10px;
@@ -27,12 +27,6 @@
     justify-content: flex-start;
     align-items: center;
     column-gap: 20px;
-}
-
-#project-name {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
 }
 
 #add-button {

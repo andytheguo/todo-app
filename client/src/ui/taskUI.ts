@@ -9,11 +9,13 @@ export async function displayTasks(project: Project) {
   app.innerHTML = `
     <div id="taskboard">
       <div id="taskboard-header">
-        <h1>Tasks</h1>
-        <button data-modal-target="#task-modal" id="add-button">Add Task</button>
-        <h1 id="project-name">Project: ${project.name}</h1>
-        <button class="sign-out">Sign out</button>
-        <button class="home-btn">Home</button>
+        <h1>Tasks | Project | ${project.name}</h1>
+
+        <div class="right-panel">
+          <button data-modal-target="#task-modal" id="add-button">Add Task</button>
+          <button class="sign-out">Sign out</button>
+          <button class="home-btn">Home</button>
+        </div>
       </div>
       <div id="tasks" class="action">
         <div class="task-list">

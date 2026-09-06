@@ -4,31 +4,9 @@ import { displayTasks } from "../ui/taskUI";
 import { setupModals, setupActionBtns } from "./modalUtils";
 import { authFetch, setupSignOutBtn } from "./authUtils";
 
-async function updateTask(taskId: number, complete: boolean) {
+async function deleteTask(taskId: number) {
   try {
-    const res = await authFetch(`http://localhost:3000/tasks/${taskId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        complete: complete
-      })
-    });
-
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.error);
-    }
-  }
-  catch (e) {
-    console.error(e);
-  }
-}
-
-async function setupTaskDelete(task: Task) {
-  try {
-    const res = await authFetch(`http://localhost:3000/tasks/${task.id}`, { method: "DELETE" });
+    const res = await authFetch(`http://localhost:3000/tasks/${taskId}`, { method: "DELETE" });
 
     if (!res.ok) {
       const data = await res.json();
@@ -66,7 +44,11 @@ function setupTaskSaveBtn(task: Task, title: HTMLHeadElement, description: HTMLP
       err!.classList.remove("active");
       const editTitle = form.querySelector<HTMLTextAreaElement>(".modal-title");
       const editDesciption = form.querySelector<HTMLTextAreaElement>(".modal-description");
-      await patchTask(task, editTitle!.value, editDesciption!.value);
+
+      await patchTask(task.id, {
+        title: editTitle!.value,
+        description: editDesciption!.value
+      });
 
       task.title = editTitle!.value;
       task.description = editDesciption!.value;
@@ -85,7 +67,11 @@ function setupTaskSaveBtn(task: Task, title: HTMLHeadElement, description: HTMLP
 function setupCheckBox(check: HTMLInputElement, task: Task, taskDiv: HTMLDivElement, incompleteDiv: HTMLDivElement, completeDiv: HTMLDivElement) {
   check.type = "checkbox";
   check.addEventListener("change", async () => {
-    await updateTask(task.id, check.checked);
+    await patchTask(task.id, {
+      title: task.title,
+      description: task.description,
+      complete: check.checked
+    });
     task.complete = check.checked;
 
     const dest = check.checked ? completeDiv : incompleteDiv;
@@ -94,10 +80,8 @@ function setupCheckBox(check: HTMLInputElement, task: Task, taskDiv: HTMLDivElem
 }
 
 function setupTaskDelBtn(delBtn: HTMLButtonElement, task: Task, taskDiv: HTMLDivElement) {
-  delBtn.textContent = "DELETE";
-  delBtn.classList = "delete-btn";
   delBtn.addEventListener("mouseup", async () => {
-    await setupTaskDelete(task);
+    await deleteTask(task.id);
     taskDiv.remove();
   });
 }
@@ -137,7 +121,7 @@ function setupTaskDrag() {
       if (!check) return;
 
       check.checked = false;
-      await updateTask(Number(taskDiv.dataset.taskId), check.checked);
+      await patchTask(Number(taskDiv.dataset.taskId), { complete: false });
 
       incompleteDiv.append(taskDiv);
     }
@@ -157,7 +141,8 @@ function setupTaskDrag() {
       if (!check) return;
 
       check.checked = true;
-      await updateTask(Number(taskDiv.dataset.taskId), check.checked);
+
+      await patchTask(Number(taskDiv.dataset.taskId), { complete: true });
 
       completeDiv.append(taskDiv);
     }
@@ -196,6 +181,8 @@ export function createTaskElement(task: Task) {
   buttonDiv.classList = "action-buttons";
 
   const delBtn = document.createElement("button");
+  delBtn.textContent = "DELETE";
+  delBtn.classList = "delete-btn";
   setupTaskDelBtn(delBtn, task, taskDiv);
 
   const bodyDiv = document.createElement("div");
@@ -226,16 +213,17 @@ export function createTaskElement(task: Task) {
   (task.complete ? completeDiv : incompleteDiv).appendChild(taskDiv);
 }
 
-async function patchTask(task: Task, title: string, description?: string) {
-  const res = await authFetch(`http://localhost:3000/tasks/${task.id}`, {
+async function patchTask(taskId: number, options: {
+  title?: string,
+  description?: string,
+  complete?: boolean
+}) {
+  const res = await authFetch(`http://localhost:3000/tasks/${taskId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      title: title,
-      description: description
-    })
+    body: JSON.stringify({ options })
   });
 
   if (!res.ok) {

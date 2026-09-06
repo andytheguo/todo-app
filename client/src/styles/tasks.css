@@ -8,6 +8,7 @@
     min-height: 125px;
     white-space: pre-wrap;
     flex-shrink: 0;
+    background: rgb(26, 26, 26);
 }
 
 #task-body {
