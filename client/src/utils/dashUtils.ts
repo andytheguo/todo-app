@@ -15,15 +15,18 @@ export async function getProjects() {
   return data;
 }
 
-async function patchProject(project: Project, name: string, description?: string) {
-  const res = await authFetch(`http://localhost:3000/projects/${project.id}`, {
+async function patchProject(projectId: number, options: {
+  name: string,
+  description?: string
+}) {
+  const res = await authFetch(`http://localhost:3000/projects/${projectId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      name: name,
-      description: description
+      name: options.name,
+      description: options.description
     })
   });
 
@@ -33,9 +36,35 @@ async function patchProject(project: Project, name: string, description?: string
   }
 }
 
-async function setupProjectDelete(project: Project) {
+function setupProjectDelBtns() {
+  const projects = document.querySelector<HTMLDivElement>("#projects");
+
+  if (!projects) {
+    throw new Error("Dashboard has not loaded yet");
+  }
+
+  projects.addEventListener("mouseup", async (event) => {
+    if (event.button !== 0) return;
+
+    const eventTarget = event.target as HTMLElement;
+
+    const button = eventTarget.closest<HTMLButtonElement>(".delete-btn");
+
+    if (!button) return;
+
+    const projectDiv = eventTarget.closest<HTMLDivElement>(".project");
+
+    if (!projectDiv) return;
+    const projectId = projectDiv.dataset.projectId;
+
+    await deleteProject(Number(projectId));
+    projectDiv.remove();
+  });
+}
+
+async function deleteProject(projectId: number) {
   try {
-    const res = await authFetch(`http://localhost:3000/projects/${project.id}`, { method: "DELETE" });
+    const res = await authFetch(`http://localhost:3000/projects/${projectId}`, { method: "DELETE" });
 
     if (!res.ok) {
       const data = await res.json();
@@ -45,15 +74,6 @@ async function setupProjectDelete(project: Project) {
   catch (e) {
     console.error(e);
   }
-}
-
-function setupProjectDelBtn(delBtn: HTMLButtonElement, project: Project, taskDiv: HTMLDivElement) {
-  delBtn.textContent = "DELETE";
-  delBtn.classList = "delete-btn";
-  delBtn.addEventListener("mouseup", async () => {
-    await setupProjectDelete(project);
-    taskDiv.remove();
-  });
 }
 
 function setupProjectEdit(project: Project) {
@@ -82,7 +102,10 @@ function setupProjectSaveBtn(project: Project, name: HTMLHeadElement, descriptio
       err!.classList.remove("active");
       const editName = form.querySelector<HTMLTextAreaElement>(".modal-title");
       const editDesciption = form.querySelector<HTMLTextAreaElement>(".modal-description");
-      await patchProject(project, editName!.value, editDesciption!.value);
+      await patchProject(project.id, {
+        name: editName!.value,
+        description: editDesciption!.value
+      });
 
       project.name = editName!.value;
       project.description = editDesciption!.value;
@@ -99,7 +122,6 @@ function setupProjectSaveBtn(project: Project, name: HTMLHeadElement, descriptio
 }
 
 function setupProjectEditBtn(editBtn: HTMLButtonElement, project: Project, name: HTMLHeadElement, description: HTMLParagraphElement) {
-  editBtn.dataset.modalTarget = "#edit-modal";
   editBtn.addEventListener("mouseup", () => {
     setupProjectEdit(project);
     setupProjectSaveBtn(project, name, description);
@@ -115,6 +137,7 @@ export function createProjectElement(project: Project) {
 
   const projectDiv = document.createElement("div");
   projectDiv.classList = "project";
+  projectDiv.dataset.projectId = String(project.id);
 
   projectDiv.addEventListener("mouseup", (event) => {
     const eventTarget = event.target as HTMLElement;
@@ -122,8 +145,6 @@ export function createProjectElement(project: Project) {
     if (eventTarget.closest(".action-buttons")) return;
     changeState("tasks", project);
   });
-
-  // TODO: progress div
 
   const progressDiv = document.createElement("div");
   progressDiv.classList = "progress"
@@ -141,14 +162,14 @@ export function createProjectElement(project: Project) {
   progressTxt.textContent = progressPercent == 100 ? "DONE" : `${progressPercent}%`
 
   progress.append(progressBar);
-
   progressDiv.append(progress, progressTxt);
 
   const buttonDiv = document.createElement("div");
   buttonDiv.classList = "action-buttons";
 
   const delBtn = document.createElement("button");
-  setupProjectDelBtn(delBtn, project, projectDiv);
+  delBtn.textContent = "DELETE";
+  delBtn.classList = "delete-btn";
 
   const bodyDiv = document.createElement("div");
   bodyDiv.id = "project-body";
@@ -161,6 +182,7 @@ export function createProjectElement(project: Project) {
   const editBtn = document.createElement("button");
   editBtn.textContent = "EDIT";
   editBtn.classList = "edit-btn";
+  editBtn.dataset.modalTarget = "#edit-modal";
   setupProjectEditBtn(editBtn, project, name, description);
 
   buttonDiv.append(delBtn, editBtn);
@@ -214,7 +236,7 @@ function setupNewProjectBtn() {
       const description = form.querySelector<HTMLTextAreaElement>(".modal-description");
       const project = await createProject(name!.value, description!.value);
 
-      createProjectElement({ id: project.id, name: project.name, description: project.description } as Project);
+      createProjectElement(project);
 
       form.reset();
     }
@@ -232,4 +254,5 @@ export async function setupDash() {
   setupSignOutBtn();
   setupModals();
   setupActionBtns();
+  setupProjectDelBtns();
 }

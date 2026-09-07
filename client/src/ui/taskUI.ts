@@ -55,7 +55,7 @@ export async function displayTasks(project: Project) {
     <div id="overlay"></div>
     `;
 
-  const tasks = await getTasks(project);
+  const tasks = await getTasks(project.id);
 
   for (const task of tasks) {
     createTaskElement(task);

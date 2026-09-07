@@ -77,6 +77,8 @@ export function setupActionBtns() {
   }
 
   action.addEventListener("mouseup", (event) => {
+    if (event.button !== 0) return;
+
     try {
       const eventTarget = event.target as HTMLElement;
       const button = eventTarget.closest<HTMLButtonElement>("[data-modal-target]");

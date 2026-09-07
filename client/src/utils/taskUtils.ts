@@ -79,6 +79,32 @@ function setupCheckBox(check: HTMLInputElement, task: Task, taskDiv: HTMLDivElem
   });
 }
 
+function setupTaskDelBtns() {
+  const tasks = document.querySelector<HTMLDivElement>("#tasks");
+
+  if (!tasks) {
+    throw new Error("Taskboard has not loaded yet");
+  }
+
+  tasks.addEventListener("mouseup", async (event) => {
+    if (event.button !== 0) return;
+
+    const eventTarget = event.target as HTMLElement;
+
+    const button = eventTarget.closest<HTMLButtonElement>(".delete-btn");
+
+    if (!button) return;
+
+    const taskDiv = eventTarget.closest<HTMLDivElement>(".task");
+
+    if (!taskDiv) return;
+    const taskId = taskDiv.dataset.taskId;
+
+    await deleteTask(Number(taskId));
+    taskDiv.remove();
+  });
+}
+
 function setupTaskDelBtn(delBtn: HTMLButtonElement, task: Task, taskDiv: HTMLDivElement) {
   delBtn.addEventListener("mouseup", async () => {
     await deleteTask(task.id);
@@ -183,7 +209,6 @@ export function createTaskElement(task: Task) {
   const delBtn = document.createElement("button");
   delBtn.textContent = "DELETE";
   delBtn.classList = "delete-btn";
-  setupTaskDelBtn(delBtn, task, taskDiv);
 
   const bodyDiv = document.createElement("div");
   bodyDiv.id = "task-body";
@@ -232,15 +257,18 @@ async function patchTask(taskId: number, options: {
   }
 }
 
-async function createTask(project: Project, title: string, description?: string) {
-  const res = await authFetch(`http://localhost:3000/projects/${project.id}/tasks`, {
+async function createTask(projectId: number, options: {
+  title: string,
+  description?: string
+}) {
+  const res = await authFetch(`http://localhost:3000/projects/${projectId}/tasks`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      title: title,
-      description: description
+      title: options.title,
+      description: options.description
     })
   });
 
@@ -266,9 +294,12 @@ function setupCreateTaskBtn(project: Project) {
       err!.classList.remove("active");
       const title = form.querySelector<HTMLTextAreaElement>(".modal-title");
       const description = form.querySelector<HTMLTextAreaElement>(".modal-description");
-      const task = await createTask(project, title!.value, description!.value);
+      const task = await createTask(project.id, {
+        title: title!.value,
+        description: description!.value
+      });
 
-      createTaskElement({ id: task.id, title: task.title, description: task.description } as Task);
+      createTaskElement(task);
 
       form.reset();
     }
@@ -285,8 +316,8 @@ function setupHomeBtn() {
   homeBtn!.addEventListener("mouseup", () => changeState("dashboard"));
 }
 
-export async function getTasks(project: Project) {
-  const res = await authFetch(`http://localhost:3000/projects/${project.id}/tasks`, { method: "GET" });
+export async function getTasks(projectId: number) {
+  const res = await authFetch(`http://localhost:3000/projects/${projectId}/tasks`, { method: "GET" });
   const data = await res.json();
 
   if (!res.ok) {
@@ -305,6 +336,7 @@ export async function setupTasks(project: Project) {
     setupModals();
     setupActionBtns();
     setupTaskDrag();
+    setupTaskDelBtns();
   }
   catch (e) {
     console.error(e);

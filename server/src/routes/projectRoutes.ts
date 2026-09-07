@@ -30,7 +30,11 @@ router.post("/projects", authenticateToken, async (req, res) => {
       }
     });
 
-    res.status(201).json(project);
+    res.status(201).json({
+      total: 0,
+      completed: 0,
+      ...project
+    });
   }
   catch (e) {
     if (e instanceof Prisma.PrismaClientValidationError) {
