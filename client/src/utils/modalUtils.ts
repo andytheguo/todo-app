@@ -68,6 +68,19 @@ export function setupModals() {
   setupOverlayClose(overlay);
 }
 
+export function updateEditModal(title: string, description?: string) {
+  const editTitle = document.querySelector<HTMLTextAreaElement>("#edit-modal .modal-title");
+  const editDesciption = document.querySelector<HTMLTextAreaElement>("#edit-modal .modal-description");
+
+  if (!editTitle || !editDesciption) {
+    throw new Error("Edit modal has not loaded yet");
+  }
+
+  editTitle.textContent = title;
+
+  if (description) editDesciption.textContent = description;
+}
+
 export function setupActionBtns() {
   const action = document.querySelector<HTMLDivElement>(".action");
   const overlay = document.querySelector<HTMLDivElement>("#overlay");

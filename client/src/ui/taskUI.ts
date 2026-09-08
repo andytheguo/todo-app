@@ -1,5 +1,4 @@
 import type { Project } from "../types";
-import { getTasks, createTaskElement } from "../utils/taskUtils";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
@@ -54,10 +53,4 @@ export async function displayTasks(project: Project) {
     </div>
     <div id="overlay"></div>
     `;
-
-  const tasks = await getTasks(project.id);
-
-  for (const task of tasks) {
-    createTaskElement(task);
-  }
 }

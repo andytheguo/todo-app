@@ -1,8 +1,10 @@
 import type { Project, Task } from "../types";
 import { changeState } from "./stateManager";
 import { displayTasks } from "../ui/taskUI";
-import { setupModals, setupActionBtns } from "./modalUtils";
+import { setupModals, setupActionBtns, updateEditModal } from "./modalUtils";
 import { authFetch, setupSignOutBtn } from "./authUtils";
+
+const tasksMap = new Map<number, Task>;
 
 async function deleteTask(taskId: number) {
   try {
@@ -18,20 +20,41 @@ async function deleteTask(taskId: number) {
   }
 }
 
-async function setupTaskEdit(task: Task) {
-  const editTitle = document.querySelector<HTMLTextAreaElement>("#edit-modal .modal-title");
-  const editDesciption = document.querySelector<HTMLTextAreaElement>("#edit-modal .modal-description");
+async function getTasks(projectId: number) {
+  const res = await authFetch(`http://localhost:3000/projects/${projectId}/tasks`, { method: "GET" });
+  const data = await res.json();
 
-  if (!editTitle || !editDesciption) {
-    throw new Error("Edit modal has not loaded yet");
+  if (!res.ok) {
+    throw new Error(data.error);
   }
 
-  editTitle.textContent = task.title;
-
-  if (task.description) editDesciption.textContent = task.description;
+  return data;
 }
 
-function setupTaskSaveBtn(task: Task, title: HTMLHeadElement, description: HTMLParagraphElement) {
+async function patchTask(taskId: number, options: {
+  title?: string,
+  description?: string,
+  complete?: boolean
+}) {
+  const res = await authFetch(`http://localhost:3000/tasks/${taskId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      title: options.title,
+      description: options.description,
+      complete: options.complete
+    })
+  });
+
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.error);
+  }
+}
+
+function updateTaskSave(task: Task, title: HTMLHeadElement, description: HTMLParagraphElement) {
   const form = document.querySelector<HTMLFormElement>("#edit-modal .modal-body");
   const err = document.querySelector<HTMLParagraphElement>("#save-error");
 
@@ -64,29 +87,51 @@ function setupTaskSaveBtn(task: Task, title: HTMLHeadElement, description: HTMLP
   }
 }
 
-function setupCheckBox(check: HTMLInputElement, task: Task, taskDiv: HTMLDivElement, incompleteDiv: HTMLDivElement, completeDiv: HTMLDivElement) {
-  check.type = "checkbox";
-  check.addEventListener("change", async () => {
-    await patchTask(task.id, {
-      title: task.title,
-      description: task.description,
-      complete: check.checked
-    });
-    task.complete = check.checked;
+function setupCheckBoxes() {
+  const tasksDiv = document.querySelector<HTMLDivElement>("#tasks");
+  const incompleteDiv = document.querySelector<HTMLDivElement>("#incomplete-tasks");
+  const completeDiv = document.querySelector<HTMLDivElement>("#complete-tasks");
 
-    const dest = check.checked ? completeDiv : incompleteDiv;
-    dest.appendChild(taskDiv);
+  if (!tasksDiv || !incompleteDiv || !completeDiv) {
+    throw new Error("Taskboard has not loaded yet");
+  }
+
+  tasksDiv.addEventListener("change", async (event) => {
+    const eventTarget = event.target as HTMLElement;
+
+    const checkbox = eventTarget.closest<HTMLInputElement>("input");
+
+    if (!checkbox) return;
+
+    const taskDiv = eventTarget.closest<HTMLDivElement>(".task");
+
+    if (!taskDiv) return;
+    const taskId = taskDiv.dataset.taskId;
+
+    const task = tasksMap.get(Number(taskId));
+
+    if (!task) {
+      throw new Error("Task not found");
+    }
+
+    await patchTask(task.id, {
+      complete: checkbox.checked
+    });
+
+    task.complete = checkbox.checked;
+
+    (checkbox.checked ? completeDiv : incompleteDiv).append(taskDiv);
   });
 }
 
 function setupTaskDelBtns() {
-  const tasks = document.querySelector<HTMLDivElement>("#tasks");
+  const tasksDiv = document.querySelector<HTMLDivElement>("#tasks");
 
-  if (!tasks) {
+  if (!tasksDiv) {
     throw new Error("Taskboard has not loaded yet");
   }
 
-  tasks.addEventListener("mouseup", async (event) => {
+  tasksDiv.addEventListener("mouseup", async (event) => {
     if (event.button !== 0) return;
 
     const eventTarget = event.target as HTMLElement;
@@ -105,18 +150,38 @@ function setupTaskDelBtns() {
   });
 }
 
-function setupTaskDelBtn(delBtn: HTMLButtonElement, task: Task, taskDiv: HTMLDivElement) {
-  delBtn.addEventListener("mouseup", async () => {
-    await deleteTask(task.id);
-    taskDiv.remove();
-  });
-}
+function setupTaskEditBtns() {
+  const tasksDiv = document.querySelector<HTMLDivElement>("#tasks");
 
-function setupTaskEditBtn(editBtn: HTMLButtonElement, task: Task, title: HTMLHeadElement, description: HTMLParagraphElement) {
-  editBtn.dataset.modalTarget = "#edit-modal";
-  editBtn.addEventListener("mouseup", () => {
-    setupTaskEdit(task)
-    setupTaskSaveBtn(task, title, description);
+  if (!tasksDiv) {
+    throw new Error("Taskboard has not loaded yet");
+  }
+
+  tasksDiv.addEventListener("mouseup", async (event) => {
+    if (event.button !== 0) return;
+
+    const eventTarget = event.target as HTMLElement;
+
+    const button = eventTarget.closest<HTMLButtonElement>(".edit-btn");
+
+    if (!button) return;
+
+    const taskDiv = eventTarget.closest<HTMLDivElement>(".task");
+
+    if (!taskDiv) return;
+    const taskId = taskDiv.dataset.taskId;
+
+    const task = tasksMap.get(Number(taskId));
+
+    if (!task) {
+      throw new Error("Task not found");
+    }
+
+    const title = taskDiv.querySelector<HTMLHeadingElement>("#task-body h2");
+    const description = taskDiv.querySelector<HTMLParagraphElement>("#task-body p");
+
+    updateEditModal(task.title, task.description);
+    updateTaskSave(task, title!, description!);
   });
 }
 
@@ -178,7 +243,9 @@ function setupTaskDrag() {
   };
 }
 
-export function createTaskElement(task: Task) {
+function createTaskElement(task: Task) {
+  tasksMap.set(task.id, task);
+
   const incompleteDiv = document.querySelector<HTMLDivElement>("#incomplete-tasks");
   const completeDiv = document.querySelector<HTMLDivElement>("#complete-tasks");
 
@@ -201,7 +268,7 @@ export function createTaskElement(task: Task) {
 
   const check = document.createElement("input");
   check.checked = task.complete;
-  setupCheckBox(check, task, taskDiv, incompleteDiv, completeDiv);
+  check.type = "checkbox";
 
   const buttonDiv = document.createElement("div");
   buttonDiv.classList = "action-buttons";
@@ -221,40 +288,16 @@ export function createTaskElement(task: Task) {
   const editBtn = document.createElement("button");
   editBtn.textContent = "EDIT";
   editBtn.classList = "edit-btn";
-  setupTaskEditBtn(editBtn, task, title, description);
+  editBtn.dataset.modalTarget = "#edit-modal";
 
   buttonDiv.append(delBtn, editBtn);
 
-  if (task.description) {
-    description.textContent = task.description;
-    bodyDiv.append(title, description, check);
-  }
-  else {
-    bodyDiv.append(title, check);
-  }
+  description.textContent = task.description ?? "";
+  bodyDiv.append(title, description, check);
 
   taskDiv.append(bodyDiv, buttonDiv);
 
   (task.complete ? completeDiv : incompleteDiv).appendChild(taskDiv);
-}
-
-async function patchTask(taskId: number, options: {
-  title?: string,
-  description?: string,
-  complete?: boolean
-}) {
-  const res = await authFetch(`http://localhost:3000/tasks/${taskId}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ options })
-  });
-
-  if (!res.ok) {
-    const data = await res.json();
-    throw new Error(data.error);
-  }
 }
 
 async function createTask(projectId: number, options: {
@@ -316,20 +359,18 @@ function setupHomeBtn() {
   homeBtn!.addEventListener("mouseup", () => changeState("dashboard"));
 }
 
-export async function getTasks(projectId: number) {
-  const res = await authFetch(`http://localhost:3000/projects/${projectId}/tasks`, { method: "GET" });
-  const data = await res.json();
+async function setupTaskElements(project: Project) {
+  const tasks = await getTasks(project.id);
 
-  if (!res.ok) {
-    throw new Error(data.error);
+  for (const task of tasks) {
+    createTaskElement(task);
   }
-
-  return data;
 }
 
 export async function setupTasks(project: Project) {
   try {
-    await displayTasks(project);
+    displayTasks(project);
+    await setupTaskElements(project);
     setupCreateTaskBtn(project);
     setupSignOutBtn();
     setupHomeBtn();
@@ -337,6 +378,8 @@ export async function setupTasks(project: Project) {
     setupActionBtns();
     setupTaskDrag();
     setupTaskDelBtns();
+    setupTaskEditBtns();
+    setupCheckBoxes();
   }
   catch (e) {
     console.error(e);

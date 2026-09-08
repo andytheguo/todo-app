@@ -1,5 +1,3 @@
-import { createProjectElement, getProjects } from "../utils/dashUtils";
-
 const app = document.querySelector<HTMLDivElement>("#app");
 
 export async function displayDash() {
@@ -43,10 +41,4 @@ export async function displayDash() {
     </div>
     <div id="overlay"></div>
     `;
-
-  const projects = await getProjects();
-
-  for (const project of projects) {
-    createProjectElement(project);
-  }
 }

@@ -1,10 +1,26 @@
 import type { Project } from "../types";
 import { displayDash } from "../ui/dashUI";
 import { authFetch, setupSignOutBtn } from "./authUtils";
-import { setupActionBtns, setupModals } from "./modalUtils";
+import { setupActionBtns, setupModals, updateEditModal } from "./modalUtils";
 import { changeState } from "./stateManager";
 
-export async function getProjects() {
+const projectsMap = new Map<number, Project>;
+
+async function deleteProject(projectId: number) {
+  try {
+    const res = await authFetch(`http://localhost:3000/projects/${projectId}`, { method: "DELETE" });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error);
+    }
+  }
+  catch (e) {
+    console.error(e);
+  }
+}
+
+async function getProjects() {
   const res = await authFetch("http://localhost:3000/projects", { method: "GET" });
   const data = await res.json();
 
@@ -37,13 +53,13 @@ async function patchProject(projectId: number, options: {
 }
 
 function setupProjectDelBtns() {
-  const projects = document.querySelector<HTMLDivElement>("#projects");
+  const projectsDiv = document.querySelector<HTMLDivElement>("#projects");
 
-  if (!projects) {
+  if (!projectsDiv) {
     throw new Error("Dashboard has not loaded yet");
   }
 
-  projects.addEventListener("mouseup", async (event) => {
+  projectsDiv.addEventListener("mouseup", async (event) => {
     if (event.button !== 0) return;
 
     const eventTarget = event.target as HTMLElement;
@@ -62,34 +78,7 @@ function setupProjectDelBtns() {
   });
 }
 
-async function deleteProject(projectId: number) {
-  try {
-    const res = await authFetch(`http://localhost:3000/projects/${projectId}`, { method: "DELETE" });
-
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.error);
-    }
-  }
-  catch (e) {
-    console.error(e);
-  }
-}
-
-function setupProjectEdit(project: Project) {
-  const editName = document.querySelector<HTMLTextAreaElement>("#edit-modal .modal-title");
-  const editDesciption = document.querySelector<HTMLTextAreaElement>("#edit-modal .modal-description");
-
-  if (!editName || !editDesciption) {
-    throw new Error("Edit modal has not loaded yet");
-  }
-
-  editName.textContent = project.name;
-
-  if (project.description) editDesciption.textContent = project.description;
-}
-
-function setupProjectSaveBtn(project: Project, name: HTMLHeadElement, description: HTMLParagraphElement) {
+function updateProjectSave(project: Project, name: HTMLHeadingElement, description: HTMLParagraphElement) {
   const form = document.querySelector<HTMLFormElement>("#edit-modal .modal-body");
   const err = document.querySelector<HTMLParagraphElement>("#save-error");
 
@@ -121,14 +110,44 @@ function setupProjectSaveBtn(project: Project, name: HTMLHeadElement, descriptio
   }
 }
 
-function setupProjectEditBtn(editBtn: HTMLButtonElement, project: Project, name: HTMLHeadElement, description: HTMLParagraphElement) {
-  editBtn.addEventListener("mouseup", () => {
-    setupProjectEdit(project);
-    setupProjectSaveBtn(project, name, description);
+function setupProjectEditBtns() {
+  const projectsDiv = document.querySelector<HTMLDivElement>("#projects");
+
+  if (!projectsDiv) {
+    throw new Error("Dashboard has not loaded yet");
+  }
+
+  projectsDiv.addEventListener("mouseup", async (event) => {
+    if (event.button !== 0) return;
+
+    const eventTarget = event.target as HTMLElement;
+
+    const button = eventTarget.closest<HTMLButtonElement>(".edit-btn");
+
+    if (!button) return;
+
+    const projectDiv = eventTarget.closest<HTMLDivElement>(".project");
+
+    if (!projectDiv) return;
+    const projectId = projectDiv.dataset.projectId;
+
+    const project = projectsMap.get(Number(projectId));
+
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    const name = projectDiv.querySelector<HTMLHeadingElement>("#project-body h2");
+    const description = projectDiv.querySelector<HTMLParagraphElement>("#project-body p");
+
+    updateEditModal(project.name, project.description);
+    updateProjectSave(project, name!, description!);
   });
 }
 
-export function createProjectElement(project: Project) {
+function createProjectElement(project: Project) {
+  projectsMap.set(project.id, project);
+
   const projectsDiv = document.querySelector<HTMLDivElement>("#projects");
 
   if (!projectsDiv) {
@@ -183,17 +202,11 @@ export function createProjectElement(project: Project) {
   editBtn.textContent = "EDIT";
   editBtn.classList = "edit-btn";
   editBtn.dataset.modalTarget = "#edit-modal";
-  setupProjectEditBtn(editBtn, project, name, description);
 
   buttonDiv.append(delBtn, editBtn);
 
-  if (project.description) {
-    description.textContent = project.description;
-    bodyDiv.append(name, description);
-  }
-  else {
-    bodyDiv.append(name, buttonDiv);
-  }
+  description.textContent = project.description ?? "";
+  bodyDiv.append(name, description);
 
   projectDiv.append(bodyDiv, progressDiv, buttonDiv);
 
@@ -248,11 +261,26 @@ function setupNewProjectBtn() {
   });
 }
 
+async function setupProjectElements() {
+  const projects = await getProjects();
+
+  for (const project of projects) {
+    createProjectElement(project);
+  }
+}
+
 export async function setupDash() {
-  await displayDash();
-  setupNewProjectBtn();
-  setupSignOutBtn();
-  setupModals();
-  setupActionBtns();
-  setupProjectDelBtns();
+  try {
+    displayDash();
+    await setupProjectElements();
+    setupNewProjectBtn();
+    setupSignOutBtn();
+    setupModals();
+    setupActionBtns();
+    setupProjectDelBtns();
+    setupProjectEditBtns();
+  }
+  catch (e) {
+    console.error(e);
+  }
 }
