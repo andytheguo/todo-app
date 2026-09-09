@@ -16,28 +16,8 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
-// Tests
-// TODO: REMOVE TESTS
 app.get('/', (req, res) => {
   res.send('Hello World!');
-});
-
-app.get("/test-users", async (req, res) => {
-  const users = await prisma.user.findMany();
-
-  res.json(users);
-});
-
-app.get("/test-tasks", async (req, res) => {
-  const tasks = await prisma.task.findMany();
-
-  res.json(tasks);
-});
-
-app.get("/test-projects", async (req, res) => {
-  const projects = await prisma.project.findMany();
-
-  res.json(projects);
 });
 
 app.listen(port, () => {

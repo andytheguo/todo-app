@@ -15,7 +15,7 @@ async function register() {
     throw new Error("Passwords must match")
   }
 
-  const res = await authFetch("http://localhost:3000/register", {
+  const res = await fetch("http://localhost:3000/register", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -31,9 +31,6 @@ async function register() {
   if (!res.ok) {
     throw new Error(data.error);
   }
-
-  // TODO: remove this:
-  console.log("Successfully logged in!");
 }
 
 async function login() {
@@ -63,9 +60,6 @@ async function login() {
 
   localStorage.setItem("accessToken", data.accessToken);
   localStorage.setItem("refreshToken", data.refreshToken);
-
-  // TODO: remove this
-  console.log(data);
 }
 
 function onLogin() {
@@ -104,7 +98,7 @@ function onRegister() {
 
     try {
       await register();
-      changeState("dashboard");
+      changeState("login");
     }
     catch (e) {
       console.error(e);

@@ -3,7 +3,8 @@ export type Task = {
   title: string,
   description?: string,
   complete: boolean,
-  projectId: number
+  projectId: number,
+  order: number
 };
 
 export type Project = {
