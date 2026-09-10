@@ -6,17 +6,27 @@ import { authFetch, setupSignOutBtn } from "./authUtils";
 
 const tasksMap = new Map<number, Task>;
 
-async function deleteTask(taskId: number) {
-  try {
-    const res = await authFetch(`http://localhost:3000/tasks/${taskId}`, { method: "DELETE" });
+async function reorderTasks(projectId: number, incomplete: number[], complete: number[]) {
+  const res = await authFetch(`http://localhost:3000/projects/${projectId}/tasks/reorder`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ incomplete, complete })
+  });
 
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.error);
-    }
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.error);
   }
-  catch (e) {
-    console.error(e);
+}
+
+async function deleteTask(taskId: number) {
+  const res = await authFetch(`http://localhost:3000/tasks/${taskId}`, { method: "DELETE" });
+
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.error);
   }
 }
 
@@ -52,6 +62,16 @@ async function patchTask(taskId: number, options: {
     const data = await res.json();
     throw new Error(data.error);
   }
+}
+
+async function setTaskOrder(projectId: number) {
+  const incompleteTasks = document.querySelectorAll<HTMLDivElement>("#incomplete-tasks .task");
+  const completeTasks = document.querySelectorAll<HTMLDivElement>("#complete-tasks .task");
+
+  const incomplete = Array.from(incompleteTasks).map(taskDiv => Number(taskDiv.dataset.taskId));
+  const complete = Array.from(completeTasks).map(taskDiv => Number(taskDiv.dataset.taskId));
+
+  await reorderTasks(projectId, incomplete, complete)
 }
 
 function updateTaskSave(task: Task, title: HTMLHeadElement, description: HTMLParagraphElement) {
@@ -212,9 +232,18 @@ function setupTaskDrag() {
       if (!check) return;
 
       check.checked = false;
-      await patchTask(Number(taskDiv.dataset.taskId), { complete: false });
+      const taskId = Number(taskDiv.dataset.taskId);
+      await patchTask(taskId, { complete: false });
 
       incompleteDiv.append(taskDiv);
+
+      const task = tasksMap.get(taskId);
+
+      if (!task) {
+        throw new Error("Task not found");
+      }
+
+      await setTaskOrder(task.projectId);
     }
     catch (e) {
       console.error(e);
@@ -233,9 +262,18 @@ function setupTaskDrag() {
 
       check.checked = true;
 
-      await patchTask(Number(taskDiv.dataset.taskId), { complete: true });
+      const taskId = Number(taskDiv.dataset.taskId);
+      await patchTask(taskId, { complete: true });
 
       completeDiv.append(taskDiv);
+
+      const task = tasksMap.get(taskId);
+
+      if (!task) {
+        throw new Error("Task not found");
+      }
+
+      await setTaskOrder(task.projectId);
     }
     catch (e) {
       console.error(e);
