@@ -205,43 +205,116 @@ function setupTaskEditBtns() {
   });
 }
 
+function makePlaceholder(height: number) {
+  const placeholder = document.createElement("div");
+  placeholder.classList.add("placeholder");
+  placeholder.style.height = `${height}px`;
+
+  return placeholder;
+}
+
+function getInsertion(event: DragEvent) {
+  const target = document.elementFromPoint(event.clientX, event.clientY) as HTMLElement;
+
+  if (!target) return undefined;
+  const task = target.closest<HTMLDivElement>(".task");
+
+  if (!task) return undefined;
+  const taskRect = task.getBoundingClientRect();
+
+  const mid = (taskRect.top + taskRect.bottom) / 2;
+
+  if (event.clientY <= mid) {
+    return task;
+  }
+  else {
+    return task.nextSibling;
+  }
+}
+
+function movePlaceholder(container: HTMLDivElement, placeholder: HTMLDivElement, event: DragEvent) {
+  const lastTask = container.lastElementChild;
+
+  if (!lastTask || event.clientY >= lastTask.getBoundingClientRect().bottom) {
+    container.append(placeholder);
+  }
+
+  const element = getInsertion(event);
+
+  if (element === undefined) return;
+  container.insertBefore(placeholder, element);
+}
+
 function setupTaskDrag() {
+  const tasksDiv = document.querySelector<HTMLDivElement>("#tasks");
   const incompleteDiv = document.querySelector<HTMLDivElement>("#incomplete-tasks");
   const completeDiv = document.querySelector<HTMLDivElement>("#complete-tasks");
 
-  if (!incompleteDiv || !completeDiv) {
+  if (!tasksDiv || !incompleteDiv || !completeDiv) {
     throw new Error("Taskboard has not loaded yet");
   }
 
+  let draggedTask: HTMLDivElement | null;
+  let placeholderTask: HTMLDivElement | null;
+
+  tasksDiv.addEventListener("dragstart", (event) => {
+    const eventTarget = event.target as HTMLElement;
+
+    const taskDiv = eventTarget.closest<HTMLDivElement>(".task");
+
+    if (!taskDiv) return;
+    draggedTask = taskDiv;
+
+    const placeholder = makePlaceholder(taskDiv.offsetHeight);
+    placeholderTask = placeholder;
+    taskDiv.classList.add("dragging");
+
+    taskDiv.parentElement!.insertBefore(placeholder, taskDiv);
+  });
+
+  tasksDiv.addEventListener("dragend", () => {
+    if (!draggedTask) return;
+
+    draggedTask.classList.remove("dragging");
+  });
+
   incompleteDiv.ondragover = (event) => {
     event.preventDefault();
+
+    if (!placeholderTask) return;
+    movePlaceholder(incompleteDiv, placeholderTask, event);
   };
 
   completeDiv.ondragover = (event) => {
     event.preventDefault();
+
+    if (!placeholderTask) return;
+    movePlaceholder(completeDiv, placeholderTask, event);
   };
 
   incompleteDiv.ondrop = async (event) => {
     event.preventDefault();
 
-    try {
-      const taskDiv = document.querySelector<HTMLDivElement>(".dragging");
-      if (!taskDiv) return;
+    if (!draggedTask || !placeholderTask) return;
 
-      const check = taskDiv.querySelector<HTMLInputElement>("#task-body input");
+    try {
+      placeholderTask.replaceWith(draggedTask);
+
+      const check = draggedTask.querySelector<HTMLInputElement>("#task-body input");
       if (!check) return;
 
       check.checked = false;
-      const taskId = Number(taskDiv.dataset.taskId);
+      const taskId = Number(draggedTask.dataset.taskId);
       await patchTask(taskId, { complete: false });
-
-      incompleteDiv.append(taskDiv);
 
       const task = tasksMap.get(taskId);
 
       if (!task) {
         throw new Error("Task not found");
       }
+
+      draggedTask = null;
+      placeholderTask = null;
 
       await setTaskOrder(task.projectId);
     }
@@ -253,25 +326,27 @@ function setupTaskDrag() {
   completeDiv.ondrop = async (event) => {
     event.preventDefault();
 
-    try {
-      const taskDiv = document.querySelector<HTMLDivElement>(".dragging");
-      if (!taskDiv) return;
+    if (!draggedTask || !placeholderTask) return;
 
-      const check = taskDiv.querySelector<HTMLInputElement>("#task-body input");
+    try {
+      placeholderTask.replaceWith(draggedTask);
+
+      const check = draggedTask.querySelector<HTMLInputElement>("#task-body input");
       if (!check) return;
 
       check.checked = true;
 
-      const taskId = Number(taskDiv.dataset.taskId);
+      const taskId = Number(draggedTask.dataset.taskId);
       await patchTask(taskId, { complete: true });
-
-      completeDiv.append(taskDiv);
 
       const task = tasksMap.get(taskId);
 
       if (!task) {
         throw new Error("Task not found");
       }
+
+      draggedTask = null;
+      placeholderTask = null;
 
       await setTaskOrder(task.projectId);
     }
@@ -295,14 +370,6 @@ function createTaskElement(task: Task) {
   taskDiv.classList = "task";
   taskDiv.draggable = true;
   taskDiv.dataset.taskId = String(task.id);
-
-  taskDiv.addEventListener("dragstart", () => {
-    taskDiv.classList.add("dragging");
-  });
-
-  taskDiv.addEventListener("dragend", () => {
-    taskDiv.classList.remove("dragging");
-  });
 
   const check = document.createElement("input");
   check.checked = task.complete;

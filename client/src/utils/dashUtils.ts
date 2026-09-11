@@ -7,16 +7,11 @@ import { changeState } from "./stateManager";
 const projectsMap = new Map<number, Project>;
 
 async function deleteProject(projectId: number) {
-  try {
-    const res = await authFetch(`http://localhost:3000/projects/${projectId}`, { method: "DELETE" });
+  const res = await authFetch(`http://localhost:3000/projects/${projectId}`, { method: "DELETE" });
 
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.error);
-    }
-  }
-  catch (e) {
-    console.error(e);
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.error);
   }
 }
 
