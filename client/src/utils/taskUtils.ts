@@ -237,6 +237,7 @@ function movePlaceholder(container: HTMLDivElement, placeholder: HTMLDivElement,
 
   if (!lastTask || event.clientY >= lastTask.getBoundingClientRect().bottom) {
     container.append(placeholder);
+    return;
   }
 
   const element = getInsertion(event);
@@ -272,10 +273,41 @@ function setupTaskDrag() {
     taskDiv.parentElement!.insertBefore(placeholder, taskDiv);
   });
 
-  tasksDiv.addEventListener("dragend", () => {
-    if (!draggedTask) return;
-
+  tasksDiv.addEventListener("dragend", async () => {
+    if (!draggedTask || !placeholderTask) return;
     draggedTask.classList.remove("dragging");
+
+    try {
+      const check = draggedTask.querySelector<HTMLInputElement>("#task-body input");
+      if (!check) return;
+
+      const container = placeholderTask.parentElement;
+
+      if (!container) return;
+
+      const complete = container === completeDiv;
+
+      check.checked = complete;
+      const taskId = Number(draggedTask.dataset.taskId);
+      await patchTask(taskId, { complete: complete });
+
+      placeholderTask.replaceWith(draggedTask);
+
+      const task = tasksMap.get(taskId);
+
+      if (!task) {
+        throw new Error("Task not found");
+      }
+
+
+      await setTaskOrder(task.projectId);
+    }
+    catch (e) {
+      console.error(e);
+    }
+
+    placeholderTask = null;
+    draggedTask = null;
   });
 
   incompleteDiv.ondragover = (event) => {
@@ -290,69 +322,6 @@ function setupTaskDrag() {
 
     if (!placeholderTask) return;
     movePlaceholder(completeDiv, placeholderTask, event);
-  };
-
-  incompleteDiv.ondrop = async (event) => {
-    event.preventDefault();
-
-    if (!draggedTask || !placeholderTask) return;
-
-    try {
-      placeholderTask.replaceWith(draggedTask);
-
-      const check = draggedTask.querySelector<HTMLInputElement>("#task-body input");
-      if (!check) return;
-
-      check.checked = false;
-      const taskId = Number(draggedTask.dataset.taskId);
-      await patchTask(taskId, { complete: false });
-
-      const task = tasksMap.get(taskId);
-
-      if (!task) {
-        throw new Error("Task not found");
-      }
-
-      draggedTask = null;
-      placeholderTask = null;
-
-      await setTaskOrder(task.projectId);
-    }
-    catch (e) {
-      console.error(e);
-    }
-  };
-
-  completeDiv.ondrop = async (event) => {
-    event.preventDefault();
-
-    if (!draggedTask || !placeholderTask) return;
-
-    try {
-      placeholderTask.replaceWith(draggedTask);
-
-      const check = draggedTask.querySelector<HTMLInputElement>("#task-body input");
-      if (!check) return;
-
-      check.checked = true;
-
-      const taskId = Number(draggedTask.dataset.taskId);
-      await patchTask(taskId, { complete: true });
-
-      const task = tasksMap.get(taskId);
-
-      if (!task) {
-        throw new Error("Task not found");
-      }
-
-      draggedTask = null;
-      placeholderTask = null;
-
-      await setTaskOrder(task.projectId);
-    }
-    catch (e) {
-      console.error(e);
-    }
   };
 }
 
