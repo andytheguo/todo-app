@@ -3,6 +3,6 @@ import "./styles/taskboard.css";
 import "./styles/global.css";
 import "./styles/modal.css";
 import "./styles/tasks.css";
-import { changeState } from "./utils/stateManager";
+import { stateManager } from "./utils/stateManager";
 
-changeState("register");
+stateManager.setState("register");

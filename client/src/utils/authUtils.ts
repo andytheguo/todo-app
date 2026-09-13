@@ -1,5 +1,5 @@
-import { changeState } from "./stateManager";
 import { displayLogin, displayRegister } from "../ui/authUI";
+import { stateManager } from "./stateManager";
 
 async function register() {
   const name = document.querySelector<HTMLInputElement>("#name");
@@ -75,7 +75,7 @@ function onLogin() {
 
     try {
       await login();
-      changeState("dashboard");
+      stateManager.setState("dashboard");
     }
     catch (e) {
       err.textContent = (e as Error).message;
@@ -98,7 +98,7 @@ function onRegister() {
 
     try {
       await register();
-      changeState("login");
+      stateManager.setState("login");
     }
     catch (e) {
       console.error(e);
@@ -107,7 +107,7 @@ function onRegister() {
 
   loginLink.addEventListener("click", (event) => {
     event.preventDefault();
-    changeState("login");
+    stateManager.setState("login");
   })
 }
 
@@ -149,7 +149,7 @@ export function setupSignOutBtn() {
 
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("accessToken");
-      changeState("register");
+      stateManager.setState("register");
     }
     catch (e) {
       console.error(e);

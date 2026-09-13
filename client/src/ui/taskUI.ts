@@ -1,14 +1,14 @@
-import type { Project } from "../types";
+import { stateManager } from "../utils/stateManager";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
-export async function displayTasks(project: Project) {
+export async function displayTasks() {
   if (!app) return;
 
   app.innerHTML = `
     <div id="taskboard">
       <div id="taskboard-header">
-        <h1>Tasks | Project | ${project.name}</h1>
+        <h1>Tasks | Project | ${stateManager.getProjectId()}</h1>
 
         <div class="right-panel">
           <button data-modal-target="#task-modal" id="add-button">Add Task</button>

@@ -2,9 +2,7 @@ import type { Project } from "../types";
 import { displayDash } from "../ui/dashUI";
 import { authFetch, setupSignOutBtn } from "./authUtils";
 import { setupActionBtns, setupModals, updateEditModal } from "./modalUtils";
-import { changeState } from "./stateManager";
-
-const projectsMap = new Map<number, Project>;
+import { stateManager } from "./stateManager";
 
 async function deleteProject(projectId: number) {
   const res = await authFetch(`http://localhost:3000/projects/${projectId}`, { method: "DELETE" });
@@ -126,7 +124,7 @@ function setupProjectEditBtns() {
     if (!projectDiv) return;
     const projectId = projectDiv.dataset.projectId;
 
-    const project = projectsMap.get(Number(projectId));
+    const project = stateManager.projectsMap.get(Number(projectId));
 
     if (!project) {
       throw new Error("Project not found");
@@ -141,7 +139,7 @@ function setupProjectEditBtns() {
 }
 
 function createProjectElement(project: Project) {
-  projectsMap.set(project.id, project);
+  stateManager.projectsMap.set(project.id, project);
 
   const projectsDiv = document.querySelector<HTMLDivElement>("#projects");
 
@@ -157,7 +155,8 @@ function createProjectElement(project: Project) {
     const eventTarget = event.target as HTMLElement;
 
     if (eventTarget.closest(".action-buttons")) return;
-    changeState("tasks", project);
+    stateManager.setProjectId(project.id);
+    stateManager.setState("tasks");
   });
 
   const progressDiv = document.createElement("div");

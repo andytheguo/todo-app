@@ -1,8 +1,8 @@
-import type { Project, Task } from "../types";
-import { changeState } from "./stateManager";
+import type { Task } from "../types";
 import { displayTasks } from "../ui/taskUI";
 import { setupModals, setupActionBtns, updateEditModal } from "./modalUtils";
 import { authFetch, setupSignOutBtn } from "./authUtils";
+import { stateManager } from "./stateManager";
 
 const tasksMap = new Map<number, Task>;
 
@@ -275,13 +275,15 @@ function setupTaskDrag() {
 
   tasksDiv.addEventListener("dragend", async () => {
     if (!draggedTask || !placeholderTask) return;
+
+    placeholderTask.replaceWith(draggedTask);
     draggedTask.classList.remove("dragging");
 
     try {
       const check = draggedTask.querySelector<HTMLInputElement>("#task-body input");
       if (!check) return;
 
-      const container = placeholderTask.parentElement;
+      const container = draggedTask.parentElement;
 
       if (!container) return;
 
@@ -290,8 +292,6 @@ function setupTaskDrag() {
       check.checked = complete;
       const taskId = Number(draggedTask.dataset.taskId);
       await patchTask(taskId, { complete: complete });
-
-      placeholderTask.replaceWith(draggedTask);
 
       const task = tasksMap.get(taskId);
 
@@ -398,7 +398,7 @@ async function createTask(projectId: number, options: {
   return data;
 }
 
-function setupCreateTaskBtn(project: Project) {
+function setupCreateTaskBtn() {
   const form = document.querySelector<HTMLFormElement>("#task-modal .modal-body");
   const err = document.querySelector<HTMLParagraphElement>("#create-error");
 
@@ -411,7 +411,7 @@ function setupCreateTaskBtn(project: Project) {
       err!.classList.remove("active");
       const title = form.querySelector<HTMLTextAreaElement>(".modal-title");
       const description = form.querySelector<HTMLTextAreaElement>(".modal-description");
-      const task = await createTask(project.id, {
+      const task = await createTask(stateManager.getProjectId(), {
         title: title!.value,
         description: description!.value
       });
@@ -430,22 +430,22 @@ function setupCreateTaskBtn(project: Project) {
 
 function setupHomeBtn() {
   const homeBtn = document.querySelector<HTMLButtonElement>(".home-btn");
-  homeBtn!.addEventListener("mouseup", () => changeState("dashboard"));
+  homeBtn!.addEventListener("mouseup", () => stateManager.setState("dashboard"));
 }
 
-async function setupTaskElements(project: Project) {
-  const tasks = await getTasks(project.id);
+async function setupTaskElements() {
+  const tasks = await getTasks(stateManager.getProjectId());
 
   for (const task of tasks) {
     createTaskElement(task);
   }
 }
 
-export async function setupTasks(project: Project) {
+export async function setupTasks() {
   try {
-    displayTasks(project);
-    await setupTaskElements(project);
-    setupCreateTaskBtn(project);
+    displayTasks();
+    await setupTaskElements();
+    setupCreateTaskBtn();
     setupSignOutBtn();
     setupHomeBtn();
     setupModals();
