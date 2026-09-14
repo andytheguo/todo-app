@@ -10,7 +10,7 @@ export function displayRegister() {
           <input id="first-password" type="password" placeholder="Password" required>
           <input id="confirm-password" type="password" placeholder="Confirm Password" required>
           <button type="submit">Register</button>
-          <a id="login-link" href="#">Already have an account?</a>
+          <a id="login-link" href="">Already have an account?</a>
         </form>
       </div>
       `;
@@ -25,6 +25,7 @@ export function displayLogin() {
           <input id="email" type="text" placeholder="Email" required>
           <input id="password" type="password" placeholder="Password" required>
           <button type="submit">Login</button>
+          <a id="register-link" href="">Don't have an account?</a>
           <p class="error">
         </form>
       </div>

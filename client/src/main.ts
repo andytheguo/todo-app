@@ -3,6 +3,6 @@ import "./styles/taskboard.css";
 import "./styles/global.css";
 import "./styles/modal.css";
 import "./styles/tasks.css";
-import { stateManager } from "./utils/stateManager";
+import { routeManager } from "./utils/router";
 
-stateManager.setState("register");
+routeManager.route("register");

@@ -1,5 +1,5 @@
 import { displayLogin, displayRegister } from "../ui/authUI";
-import { stateManager } from "./stateManager";
+import { routeManager } from "./router";
 
 async function register() {
   const name = document.querySelector<HTMLInputElement>("#name");
@@ -64,9 +64,10 @@ async function login() {
 
 function onLogin() {
   const loginForm = document.querySelector<HTMLFormElement>("#login");
+  const registerLink = document.querySelector<HTMLLinkElement>("#register-link");
   const err = document.querySelector<HTMLParagraphElement>(".error");
 
-  if (!loginForm || !err) {
+  if (!loginForm || !registerLink || !err) {
     throw new Error("Login form has not loaded yet");
   }
 
@@ -75,13 +76,18 @@ function onLogin() {
 
     try {
       await login();
-      stateManager.setState("dashboard");
+      routeManager.route("/dashboard");
     }
     catch (e) {
       err.textContent = (e as Error).message;
       err.classList.add("active");
       console.error(e);
     }
+  });
+
+  registerLink.addEventListener("click", (event) => {
+    event.preventDefault();
+    routeManager.route("/register");
   });
 }
 
@@ -98,7 +104,7 @@ function onRegister() {
 
     try {
       await register();
-      stateManager.setState("login");
+      routeManager.route("/login");
     }
     catch (e) {
       console.error(e);
@@ -107,8 +113,8 @@ function onRegister() {
 
   loginLink.addEventListener("click", (event) => {
     event.preventDefault();
-    stateManager.setState("login");
-  })
+    routeManager.route("/login");
+  });
 }
 
 export function setupRegister() {
@@ -149,7 +155,7 @@ export function setupSignOutBtn() {
 
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("accessToken");
-      stateManager.setState("register");
+      routeManager.route("/register");
     }
     catch (e) {
       console.error(e);

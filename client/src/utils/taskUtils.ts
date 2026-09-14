@@ -2,7 +2,7 @@ import type { Task } from "../types";
 import { displayTasks } from "../ui/taskUI";
 import { setupModals, setupActionBtns, updateEditModal } from "./modalUtils";
 import { authFetch, setupSignOutBtn } from "./authUtils";
-import { stateManager } from "./stateManager";
+import { routeManager } from "./router";
 
 const tasksMap = new Map<number, Task>;
 
@@ -411,7 +411,7 @@ function setupCreateTaskBtn() {
       err!.classList.remove("active");
       const title = form.querySelector<HTMLTextAreaElement>(".modal-title");
       const description = form.querySelector<HTMLTextAreaElement>(".modal-description");
-      const task = await createTask(stateManager.getProjectId(), {
+      const task = await createTask(routeManager.getProjectId(), {
         title: title!.value,
         description: description!.value
       });
@@ -430,11 +430,11 @@ function setupCreateTaskBtn() {
 
 function setupHomeBtn() {
   const homeBtn = document.querySelector<HTMLButtonElement>(".home-btn");
-  homeBtn!.addEventListener("mouseup", () => stateManager.setState("dashboard"));
+  homeBtn!.addEventListener("mouseup", () => routeManager.route("/dashboard"));
 }
 
 async function setupTaskElements() {
-  const tasks = await getTasks(stateManager.getProjectId());
+  const tasks = await getTasks(routeManager.getProjectId());
 
   for (const task of tasks) {
     createTaskElement(task);

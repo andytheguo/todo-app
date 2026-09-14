@@ -1,4 +1,4 @@
-import { stateManager } from "../utils/stateManager";
+import { routeManager } from "../utils/router";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
@@ -8,7 +8,7 @@ export async function displayTasks() {
   app.innerHTML = `
     <div id="taskboard">
       <div id="taskboard-header">
-        <h1>Tasks | Project | ${stateManager.getProjectId()}</h1>
+        <h1>Tasks | Project | ${routeManager.getProjectId()}</h1>
 
         <div class="right-panel">
           <button data-modal-target="#task-modal" id="add-button">Add Task</button>
