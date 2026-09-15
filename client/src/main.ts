@@ -5,4 +5,4 @@ import "./styles/modal.css";
 import "./styles/tasks.css";
 import { routeManager } from "./utils/router";
 
-routeManager.route("register");
+routeManager.route("/register");

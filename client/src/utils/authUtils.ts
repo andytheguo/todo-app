@@ -94,8 +94,9 @@ function onLogin() {
 function onRegister() {
   const registerForm = document.querySelector<HTMLFormElement>("#register");
   const loginLink = document.querySelector<HTMLLinkElement>("#login-link");
+  const err = document.querySelector<HTMLParagraphElement>(".error");
 
-  if (!registerForm || !loginLink) {
+  if (!registerForm || !loginLink || !err) {
     throw new Error("Registration form has not loaded yet");
   }
 
@@ -107,6 +108,8 @@ function onRegister() {
       routeManager.route("/login");
     }
     catch (e) {
+      err.textContent = (e as Error).message;
+      err.classList.add("active");
       console.error(e);
     }
   });

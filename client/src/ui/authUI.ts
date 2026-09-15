@@ -11,6 +11,7 @@ export function displayRegister() {
           <input id="confirm-password" type="password" placeholder="Confirm Password" required>
           <button type="submit">Register</button>
           <a id="login-link" href="">Already have an account?</a>
+          <p class="error">
         </form>
       </div>
       `;

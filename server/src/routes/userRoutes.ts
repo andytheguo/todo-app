@@ -27,6 +27,11 @@ router.post("/register", async (req, res) => {
     if (e instanceof Prisma.PrismaClientValidationError) {
       return res.status(400).json({ error: "Missing or incorrect field" });
     }
+    else if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      if (e.code === "P2002") {
+        return res.status(409).json({ error: "Email is already in use" });
+      }
+    }
 
     res.sendStatus(500);
   }
